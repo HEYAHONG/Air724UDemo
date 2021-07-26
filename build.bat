@@ -35,8 +35,8 @@ set PATH=%PROJECT_PATH%\csdk\tools\win32;%PATH%
 
 
 @rem 创建工程目录
-MD %PROJECT_PATH%\build 1>nul 2>nul
-cd   %PROJECT_PATH%\build
+MD "%PROJECT_PATH%\build" 1>nul 2>nul
+cd   "%PROJECT_PATH%\build"
 
 
 @rem 生成工程（可通过codeblcoks编辑）并编译
@@ -44,4 +44,4 @@ cmake "%PROJECT_PATH%\csdk"  -G "CodeBlocks - Ninja" & ninja
 
 
 @rem 回到工程目录
-cd %PROJECT_PATH%
+cd "%PROJECT_PATH%"
