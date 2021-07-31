@@ -9,9 +9,9 @@ set CSDK_INSTALL_PATH=%userprofile%\OpenLuat\Luat_CSDK_Air724U
 @rem  版本号
 set CSDK_VER=1.0.0
 
-@rem  工程名称(不要与CSDK中demo的名称相同)
+@rem  工程名称
 set CSDK_PRO=Air724UDemo
-set BUILD_TARGET=%CSDK_PRO%
+set BUILD_TARGET=%PROJECT_PATH%
 set BUILD_RELEASE_TYPE=debug
 
 set FOTA_FLAG=%1
@@ -20,19 +20,13 @@ set FOTA_TYPE=%2
 @rem 设置AM_MODEL,选择不同的核心功能(见%CSDK_INSTALL_PATH%\core目录） 
 set AM_MODEL=iot_SDK_720U
 
-@rem 创建工程链接至CSDK
-rmdir "%CSDK_INSTALL_PATH%\demo\%CSDK_PRO%" 1>nul 2>nul
-mklink /d /j "%CSDK_INSTALL_PATH%\demo\%CSDK_PRO%"  "%PROJECT_PATH%" 1>nul 2>nul
-
 @rem 添加CSDK中的工具
 mklink /d /j   "%PROJECT_PATH%\csdk" "%CSDK_INSTALL_PATH%"  1>nul 2>nul
-set PATH=%PROJECT_PATH%\csdk\prebuilts\win32\bin;%PATH%
-set PATH=%PROJECT_PATH%\csdk\prebuilts\win32\cmake\bin;%PATH%
-set PATH=%PROJECT_PATH%\csdk\prebuilts\win32\python3;%PATH%
-set PATH=%PROJECT_PATH%\csdk\prebuilts\win32\gcc-arm-none-eabi\bin;%PATH%
-set PATH=%PROJECT_PATH%\csdk\tools;%PATH%
-set PATH=%PROJECT_PATH%\csdk\tools\win32;%PATH%
 
+@rem 运行csdk的启动脚本
+call %PROJECT_PATH%\csdk\tools\core_launch.bat  %BUILD_TARGET%
+
+echo BUILD_TARGET:%BUILD_TAGET%
 
 @rem 创建工程目录
 MD "%PROJECT_PATH%\build" 1>nul 2>nul
