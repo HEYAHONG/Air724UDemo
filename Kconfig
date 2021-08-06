@@ -1,0 +1,9 @@
+config USING_KCONFIG
+    bool "use this config"
+    default y
+
+
+menu "APP Config"
+
+
+endmenu
