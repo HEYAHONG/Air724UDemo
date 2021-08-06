@@ -8,7 +8,7 @@ endif()
 
 #生成config.h
 add_custom_command(OUTPUT config.h
-                   COMMAND ${PYTHON} -m genconfig
+                   COMMAND ${PYTHON} -m genconfig --header-path config.h
 		   WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
 		   )
 
