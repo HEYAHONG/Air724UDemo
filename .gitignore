@@ -1,3 +1,5 @@
 build/
 csdk
-
+.config
+config.h
+*.old

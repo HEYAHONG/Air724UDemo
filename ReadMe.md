@@ -28,6 +28,11 @@ git clone -b HYH https://github.com/HEYAHONG/Luat_CSDK_Air724U.git
 
 - 下载完成后,在demo目录中可使用build.bat构建demo程序,构建完成后,在demo工程目录/build/hex中就是最终程序。
 
+## 脚本说明
+
+- build.bat:构建工程文件(condeblocks工程文件在build目录中)并编译。
+- menuconfig.bat:配置Kconfig。
+
 
 
 
