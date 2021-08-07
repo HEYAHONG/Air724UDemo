@@ -26,8 +26,11 @@ add_custom_target(menuconfig ${PYTHON} -m menuconfig
                   USES_TERMINAL
                   )
 
+
 if(CONFIG_APPIMG_LOAD_FLASH)
-add_appimg(${target} ${flash_ldscript} main.c debug.c config.h)
+add_appimg(${target} ${flash_ldscript} main.c debug.c cpp.cpp appstack/appstack.cpp config.h)
 elseif(CONFIG_APPIMG_LOAD_FILE)
-add_appimg(${target} ${file_ldscript} main.c debug.c config.h)
+add_appimg(${target} ${file_ldscript} main.c debug.c cpp.cpp  appstack/appstack.cpp config.h)
 endif()
+
+INCLUDE_DIRECTORIES(. appstack)

@@ -4,10 +4,13 @@
 #include "config.h"
 #include "debug.h"
 #include "iot_flash.h"
+#include "stdlib.h"
+#include "stdio.h"
+#include "appstack.hpp"
 
 HANDLE main_task_handle=NULL;
 
-static  __unused const char * TAG="main";
+static  __unused  const char * TAG="main";
 
 static void main_task(PVOID pParameter)
 {
@@ -30,14 +33,17 @@ static void main_task(PVOID pParameter)
         iot_flash_getaddr(&addr,&length);
 
         //打印剩余flash
-        app_debug_print("%s:User Flash Addr:0x%08X,%uBytes",TAG,addr,length);
+        app_debug_print("%s:User Flash Addr:0x%08X,%uBytes\n\r",TAG,addr,length);
 
     }
+
+    app_init();
 
 
     while(true)
     {
         iot_os_sleep(1);
+        app_loop();
     }
 
 
@@ -60,5 +66,6 @@ int appimg_enter(void *param)
 
 void appimg_exit(void)
 {
+    app_exit();
     app_debug_print("%s:%s",TAG,CONFIG_APP_EXIT_MESSAGE"\n\r");
 }
