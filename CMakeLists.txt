@@ -27,7 +27,7 @@ add_custom_target(menuconfig ${PYTHON} -m menuconfig
                   )
 
 if(CONFIG_APPIMG_LOAD_FLASH)
-add_appimg(${target} ${flash_ldscript} main.c config.h)
+add_appimg(${target} ${flash_ldscript} main.c debug.c config.h)
 elseif(CONFIG_APPIMG_LOAD_FILE)
-add_appimg(${target} ${file_ldscript} main.c config.h)
+add_appimg(${target} ${file_ldscript} main.c debug.c config.h)
 endif()

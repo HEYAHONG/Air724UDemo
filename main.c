@@ -1,35 +1,53 @@
-/***************
-	demo_hello
-****************/
-
-
-#include "iot_debug.h"
+﻿#include "iot_debug.h"
 #include "iot_os.h"
+#include "stdbool.h"
+#include "config.h"
+#include "debug.h"
 
-HANDLE demo_hello_task;
+HANDLE main_task_handle=NULL;
 
-static void demo_hello(PVOID pParameter)
+const char * TAG=__FILE__;
+
+static void main_task(PVOID pParameter)
 {
-    iot_debug_print("[hello]demo_hello");
 
-    for (int n = 0; n < 10; n++)
+
+    app_debug_print(CONFIG_APP_ENTER_MESSAGE"\n\r");
+
     {
-        iot_debug_print("[hello]hello world %d", n);
-        iot_os_sleep(500);
+        UINT32 totalmemory=0,freememory=0;
+
+        iot_os_mem_used(&totalmemory,&freememory);
+
+        //打印剩余内存
+        app_debug_print("Total Memory:%ubytes,Free Memory:%ubytes\n\r",totalmemory,freememory);
     }
 
-    iot_os_delete_task(demo_hello_task);
+
+    while(true)
+    {
+        iot_os_sleep(1);
+    }
+
+
+    iot_os_delete_task(main_task_handle);
 }
 
 int appimg_enter(void *param)
 {
-    iot_debug_print("[hello]appimg_enter");
 
-	demo_hello_task = iot_os_create_task(demo_hello, NULL, 1024, 1, OPENAT_OS_CREATE_DEFAULT, "hello");
+#if CONFIG_APP_DEBUG == 1
+    iot_debug_set_fault_mode(OPENAT_FAULT_HANG);
+#endif // CONFIG_APP_DEBUG
+
+    app_debug_init();
+
+
+    main_task_handle = iot_os_create_task(main_task, NULL, 1024, 1, OPENAT_OS_CREATE_DEFAULT, "main");
     return 0;
 }
 
 void appimg_exit(void)
 {
-    iot_debug_print("[hello]appimg_exit");
+    app_debug_print(CONFIG_APP_EXIT_MESSAGE"\n\r");
 }

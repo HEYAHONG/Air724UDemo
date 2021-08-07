@@ -1,9 +1,11 @@
-config USING_KCONFIG
-    bool "use this config"
+
+config APP_ENTER_MESSAGE
+    string "app enter message"
+    default "APP Start"
+config APP_EXIT_MESSAGE
+    string "app exit message"
+    default "APP Exit"
+
+config APP_DEBUG
+    bool "debug mode"
     default y
-
-
-menu "APP Config"
-
-
-endmenu
