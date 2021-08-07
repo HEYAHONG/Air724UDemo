@@ -3,16 +3,17 @@
 #include "stdbool.h"
 #include "config.h"
 #include "debug.h"
+#include "iot_flash.h"
 
 HANDLE main_task_handle=NULL;
 
-const char * TAG=__FILE__;
+static  __unused const char * TAG="main";
 
 static void main_task(PVOID pParameter)
 {
 
 
-    app_debug_print(CONFIG_APP_ENTER_MESSAGE"\n\r");
+    app_debug_print("%s:%s",TAG,CONFIG_APP_ENTER_MESSAGE"\n\r");
 
     {
         UINT32 totalmemory=0,freememory=0;
@@ -20,7 +21,17 @@ static void main_task(PVOID pParameter)
         iot_os_mem_used(&totalmemory,&freememory);
 
         //打印剩余内存
-        app_debug_print("Total Memory:%ubytes,Free Memory:%ubytes\n\r",totalmemory,freememory);
+        app_debug_print("%s:Total Memory:%uBytes,Free Memory:%uBytes\n\r",TAG,totalmemory,freememory);
+    }
+
+    {
+        UINT32 addr=0,length=0;
+
+        iot_flash_getaddr(&addr,&length);
+
+        //打印剩余flash
+        app_debug_print("%s:User Flash Addr:0x%08X,%uBytes",TAG,addr,length);
+
     }
 
 
@@ -49,5 +60,5 @@ int appimg_enter(void *param)
 
 void appimg_exit(void)
 {
-    app_debug_print(CONFIG_APP_EXIT_MESSAGE"\n\r");
+    app_debug_print("%s:%s",TAG,CONFIG_APP_EXIT_MESSAGE"\n\r");
 }
