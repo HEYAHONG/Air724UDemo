@@ -15,3 +15,9 @@ menu "CPP"
 source "${PROJECT_PATH}/cpp.Kconfig"
 
 endmenu
+
+menu "NetWork"
+
+source "${PROJECT_PATH}/network.Kconfig"
+
+endmenu

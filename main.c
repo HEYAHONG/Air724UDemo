@@ -7,6 +7,8 @@
 #include "stdlib.h"
 #include "stdio.h"
 #include "appstack.hpp"
+#include "network.h"
+#include "iot_pmd.h"
 
 HANDLE main_task_handle=NULL;
 
@@ -17,6 +19,8 @@ static void main_task(PVOID pParameter)
 
 
     app_debug_print("%s:%s",TAG,CONFIG_APP_ENTER_MESSAGE"\n\r");
+
+
 
     {
         UINT32 totalmemory=0,freememory=0;
@@ -43,7 +47,10 @@ static void main_task(PVOID pParameter)
     while(true)
     {
         iot_os_sleep(1);
-        app_loop();
+        if(!app_loop())
+        {
+            break;
+        }
     }
 
 
@@ -57,7 +64,13 @@ int appimg_enter(void *param)
     iot_debug_set_fault_mode(OPENAT_FAULT_HANG);
 #endif // CONFIG_APP_DEBUG
 
+    iot_pmd_exit_deepsleep();
+
     app_debug_init();
+
+#if CONFIG_NETWORK_START_ON_BOOT == 1
+    network_init();
+#endif // CONFIG_NETWORK_START_ON_BOOT
 
 
     main_task_handle = iot_os_create_task(main_task, NULL, 1024, 1, OPENAT_OS_CREATE_DEFAULT, "main");

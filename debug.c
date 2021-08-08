@@ -33,6 +33,12 @@ void app_debug_print(const char * fmt,...)
         va_start(args, fmt);
         vsnprintf(buff, 256, fmt, args);
     }
+
+    HANDLE lock=iot_os_enter_critical_section();
+
     iot_uart_write(OPENAT_UART_2,(UINT8 *)buff,strlen(buff));
+
+    iot_os_exit_critical_section(lock);
+
     iot_os_free(buff);
 }

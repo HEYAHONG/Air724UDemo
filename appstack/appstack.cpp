@@ -12,9 +12,9 @@ void app_init()
     }
 }
 
-void app_loop()
+bool app_loop()
 {
-
+    return true;
 }
 
 void app_exit()

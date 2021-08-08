@@ -5,10 +5,11 @@
 extern "C"
 {
 #endif // __cplusplus
+#include "stdlib.h"
 
 void app_init();
 
-void app_loop();
+bool app_loop();
 
 void app_exit();
 

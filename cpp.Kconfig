@@ -1,9 +1,9 @@
 
 config CPP_OP_NEW_DEBUG
     bool "operator new debug"
-    default y
+    default n
 
 config CPP_OP_DELETE_DEBUG
-    bool "operator new debug"
-    default y
+    bool "operator delete debug"
+    default n
 
