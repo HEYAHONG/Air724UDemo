@@ -5,6 +5,8 @@
 extern "C"
 {
 #endif // __cplusplus
+#include "stdbool.h"
+#include "stdint.h"
 
 typedef enum
 {
@@ -24,6 +26,15 @@ void network_start_connect();
 //获取当前状态
 NetWork_State_t network_get_state();
 
+
+typedef struct
+{
+    void (*init)();
+    void (*loop)(NetWork_State_t current_state,bool is_state_change,int8_t csq);
+} network_callback_t;
+
+//设置网络回调
+void network_set_callback(network_callback_t cb);
 
 #ifdef __cplusplus
 }

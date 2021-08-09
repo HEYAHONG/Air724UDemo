@@ -7,6 +7,7 @@
 #include "stdlib.h"
 #include "stdio.h"
 #include "appstack.hpp"
+#include "appsocket.hpp"
 #include "network.h"
 #include "iot_pmd.h"
 
@@ -68,12 +69,15 @@ int appimg_enter(void *param)
 
     app_debug_init();
 
+    appsocket_init();
+
+
 #if CONFIG_NETWORK_START_ON_BOOT == 1
     network_init();
 #endif // CONFIG_NETWORK_START_ON_BOOT
 
 
-    main_task_handle = iot_os_create_task(main_task, NULL, 1024, 1, OPENAT_OS_CREATE_DEFAULT, "main");
+    main_task_handle = iot_os_create_task(main_task, NULL, 4096, 1, OPENAT_OS_CREATE_DEFAULT, "main");
     return 0;
 }
 

@@ -56,3 +56,14 @@ void operator delete(void* pointee)
 #endif // CONFIG_CPP_OP_DELETE_DEBUG
     iot_os_free(pointee);
 }
+
+//一般不会用到此函数
+extern "C" void __libc_fini_array()
+{
+    //啥也不做
+}
+//一般不会用到此变量
+extern "C"
+{
+    void * __dso_handle=NULL;
+}

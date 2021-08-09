@@ -1,3 +1,7 @@
+set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -static-libgcc ")
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -static-libgcc -static-libstdc++ ")
+
+
 #genconfig,使用Kconfig生成config.h
 find_program(GENCONFIG genconfig)
 find_program(PYTHON python)
@@ -28,9 +32,9 @@ add_custom_target(menuconfig ${PYTHON} -m menuconfig
 
 
 if(CONFIG_APPIMG_LOAD_FLASH)
-add_appimg(${target} ${flash_ldscript} main.c debug.c network.c cpp.cpp appstack/appstack.cpp config.h)
+add_appimg(${target} ${flash_ldscript} main.c debug.c network.c cpp.cpp appstack/appstack.cpp appstack/appsocket.cpp config.h)
 elseif(CONFIG_APPIMG_LOAD_FILE)
-add_appimg(${target} ${file_ldscript} main.c debug.c network.c cpp.cpp  appstack/appstack.cpp config.h)
+add_appimg(${target} ${file_ldscript} main.c debug.c network.c cpp.cpp  appstack/appstack.cpp appstack/appsocket.cpp config.h)
 endif()
 
 INCLUDE_DIRECTORIES(. appstack)

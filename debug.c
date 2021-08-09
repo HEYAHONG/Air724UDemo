@@ -9,6 +9,8 @@
 #include "stdio.h"
 #include "string.h"
 
+HANDLE lock=NULL;
+
 //初始化app_debug,默认使用UART2,921600
 void app_debug_init()
 {
@@ -21,6 +23,8 @@ void app_debug_init()
     uartCfg.flowControl = OPENAT_UART_FLOWCONTROL_NONE; //无流控
 
     iot_uart_open(OPENAT_UART_2,&uartCfg);
+
+    lock=iot_os_create_semaphore(1);
 }
 
 //输出调试信息
@@ -34,11 +38,11 @@ void app_debug_print(const char * fmt,...)
         vsnprintf(buff, 256, fmt, args);
     }
 
-    HANDLE lock=iot_os_enter_critical_section();
+    iot_os_wait_semaphore(lock,0);
 
     iot_uart_write(OPENAT_UART_2,(UINT8 *)buff,strlen(buff));
 
-    iot_os_exit_critical_section(lock);
+    iot_os_release_semaphore(lock);
 
     iot_os_free(buff);
 }

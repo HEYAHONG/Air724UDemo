@@ -21,3 +21,9 @@ menu "NetWork"
 source "${PROJECT_PATH}/network.Kconfig"
 
 endmenu
+
+menu "AppStack"
+
+source "${PROJECT_PATH}/appstack/appstack.Kconfig"
+
+endmenu

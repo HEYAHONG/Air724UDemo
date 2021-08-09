@@ -14,6 +14,14 @@ static __unused const char * TAG="network";
 
 static NetWork_State_t net_state=NETWORK_STATE_NO_INIT;
 
+static network_callback_t callback={NULL,NULL};
+
+//设置网络回调
+void network_set_callback(network_callback_t cb)
+{
+    callback=cb;
+}
+
 NetWork_State_t network_get_state()
 {
     return net_state;
@@ -71,6 +79,12 @@ static void network_task(PVOID pParameter)
 {
     app_debug_print("%s:network init \n\r",TAG);
 
+    NetWork_State_t current_state=net_state;
+
+    if(callback.init!=NULL)
+    {
+        callback.init();
+    }
 
     while(true)
     {
@@ -108,6 +122,21 @@ static void network_task(PVOID pParameter)
                 break;
             }
         }
+
+        {
+            bool is_change=(current_state!=net_state);
+            if(is_change)
+            {
+                current_state=net_state;
+            }
+
+            if(callback.loop!=NULL)
+            {
+                callback.loop(current_state,is_change,state.csq);
+            }
+
+        }
+
         iot_os_sleep(500);
     }
 
@@ -117,7 +146,9 @@ static void network_task(PVOID pParameter)
 
 void network_init()
 {
-    network_task_handle = iot_os_create_task(network_task, NULL, 1024, 2, OPENAT_OS_CREATE_DEFAULT, "network");
+    network_task_handle = iot_os_create_task(network_task, NULL, 4096, 2, OPENAT_OS_CREATE_DEFAULT, "network");
     //注册网络状态回调函数
     iot_network_set_cb(networkIndCallBack);
 }
+
+

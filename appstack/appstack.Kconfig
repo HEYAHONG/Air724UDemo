@@ -1,0 +1,6 @@
+
+config APPSTACK_MIN_AUTO_TASK_PRIORITY
+    int "min auto task priority"
+    range 10 127
+    default 32
+
