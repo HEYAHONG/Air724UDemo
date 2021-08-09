@@ -151,6 +151,7 @@ public:
                 cfg.before_close(&cfg,socketfd);
             }
             close(socketfd);
+            socketfd=-1;
         }
     }
 
