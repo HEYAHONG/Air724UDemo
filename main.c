@@ -21,6 +21,7 @@ static void main_task(PVOID pParameter)
 
     app_debug_print("%s:%s",TAG,CONFIG_APP_ENTER_MESSAGE"\n\r");
 
+    iot_os_sleep(500);//延时500ms
 
     app_init();
 

@@ -105,7 +105,8 @@ public:
                     }
                     else
                     {
-                        {   //设置接收超时为5(防止接收阻塞)
+                        {
+                            //设置接收超时为5(防止接收阻塞)
                             int timeout=5;
                             setsockopt(sock.socketfd,SOL_SOCKET,SO_RCVTIMEO,&timeout,sizeof(timeout));
                         }
@@ -124,7 +125,8 @@ public:
                                 }
                             }
 
-                            {//判断socket错误码
+                            {
+                                //判断socket错误码
                                 int err=socket_errno(sock.socketfd);
                                 if(err==ENOTCONN)
                                 {

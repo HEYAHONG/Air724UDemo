@@ -27,3 +27,9 @@ menu "AppStack"
 source "${PROJECT_PATH}/appstack/appstack.Kconfig"
 
 endmenu
+
+menu "AppMQTT"
+
+source "${PROJECT_PATH}/appstack/appmqtt.Kconfig"
+
+endmenu

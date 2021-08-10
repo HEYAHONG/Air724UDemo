@@ -41,6 +41,8 @@ typedef struct __appsocket_cfg_t
     bool (*onloop)(const struct __appsocket_cfg_t *cfg,int socketfd);//返回false重启socket
     //关闭前回调
     void (*before_close)(const struct __appsocket_cfg_t *cfg,int socketfd);
+    //用户使用变量(appsocket中不使用)
+    void * userptr;
 
 } appsocket_cfg_t;
 
