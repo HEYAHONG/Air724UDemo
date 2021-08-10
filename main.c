@@ -22,6 +22,8 @@ static void main_task(PVOID pParameter)
     app_debug_print("%s:%s",TAG,CONFIG_APP_ENTER_MESSAGE"\n\r");
 
 
+    app_init();
+
 
     {
         UINT32 totalmemory=0,freememory=0;
@@ -42,7 +44,6 @@ static void main_task(PVOID pParameter)
 
     }
 
-    app_init();
 
 
     while(true)

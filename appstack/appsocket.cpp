@@ -3,6 +3,8 @@
 #include "debug.h"
 #include "stdlib.h"
 #include "stdio.h"
+#include "string.h"
+#include "errno.h"
 
 static __unused const char *TAG="appsocket";
 
@@ -16,6 +18,7 @@ private:
     int socketfd;
     struct
     {
+        bool is_pending_stop;
         HANDLE task_handle;
     } task_info;
     static int next_appsocket_id;
@@ -46,6 +49,7 @@ public:
         socketfd=-1;
 
         task_info.task_handle=NULL;
+        task_info.is_pending_stop=false;
     };
 
     //复制构造函数
@@ -59,6 +63,7 @@ public:
 
         socketfd=-1;
         task_info.task_handle=NULL;
+        task_info.is_pending_stop=false;
     }
 
     int get_appsocket_id()
@@ -69,6 +74,9 @@ public:
     static void  task_entry(void *ptr)
     {
         appsocket &sock=(*(appsocket*)ptr);
+        sock.task_info.is_pending_stop=false;
+        app_debug_print("%s:appsocket %d task start !!!\n\r",TAG,sock.appsocket_id);
+
         while(true)
         {
             sock.socketfd=socket(sock.cfg.server_addr.sin_family,sock.cfg.socket_type,0);
@@ -93,14 +101,19 @@ public:
                         close(sock.socketfd);
                         sock.socketfd=-1;
                         iot_os_sleep(3000);
-                        continue;
+                        break;;
                     }
                     else
                     {
+                        {   //设置接收超时为5(防止接收阻塞)
+                            int timeout=5;
+                            setsockopt(sock.socketfd,SOL_SOCKET,SO_RCVTIMEO,&timeout,sizeof(timeout));
+                        }
                         if(sock.cfg.after_connect!=NULL)
                         {
                             sock.cfg.after_connect(&sock.cfg,sock.socketfd);
                         }
+
                         while(true)
                         {
                             if(sock.cfg.onloop!=NULL)//onloop一般不能为NULL
@@ -110,7 +123,26 @@ public:
                                     break;
                                 }
                             }
+
+                            {//判断socket错误码
+                                int err=socket_errno(sock.socketfd);
+                                if(err==ENOTCONN)
+                                {
+                                    //连接丢失
+                                    break;
+                                }
+                            }
+
+                            if(sock.task_info.is_pending_stop)
+                            {
+                                break;
+                            }
                             iot_os_sleep(1);
+                        }
+
+                        while(sock.task_info.is_pending_stop)
+                        {
+                            iot_os_sleep(1000);//等待被删除
                         }
 
                         if(sock.cfg.before_close!=NULL)
@@ -142,6 +174,8 @@ public:
     {
         if(task_info.task_handle!=NULL)
         {
+            task_info.is_pending_stop=true;
+            iot_os_sleep(50);
             iot_os_delete_task(task_info.task_handle);
         }
         if(socketfd>=0)
@@ -168,8 +202,8 @@ int appsocket::next_appsocket_id=0;
 #include "vector"
 
 //由于使用的自定义入口,C++全局变量的构造及析构需小心使用
-std::vector<appsocket> *Queue_Handle=NULL;
-HANDLE Queuelock=NULL;
+static std::vector<appsocket> *Queue_Handle=NULL;
+static HANDLE Queuelock=NULL;
 
 
 extern "C"
@@ -285,3 +319,13 @@ bool appsocket_remove(int appsocket_id)
 
     return false;
 }
+
+struct openat_sockaddr_in appsocket_get_addr_by_ip(const char * ip,uint16_t port)
+{
+    struct openat_sockaddr_in addr;
+    memset(&addr,0,sizeof(addr));
+    addr.sin_family=OPENAT_AF_INET;
+    addr.sin_port=htons(port);
+    inet_aton(ip,&addr.sin_addr);
+    return addr;
+};

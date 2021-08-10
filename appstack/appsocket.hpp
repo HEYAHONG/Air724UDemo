@@ -11,6 +11,7 @@ extern "C"
 #include "network.h"
 #include "iot_socket.h"
 #include "iot_os.h"
+#include "stdint.h"
 
 /*
 appsocket主要负责在联网时打开socket,在失去连接时断开socket，收发操作仍然通过socket操作进行
@@ -37,11 +38,16 @@ typedef struct __appsocket_cfg_t
     //连接成功后回调函数
     void (*after_connect)(const struct __appsocket_cfg_t *cfg,int socketfd);
     //成功连接后循环内回调函数(只能进行发送与接收操作),不可长时间阻塞
-    bool (*onloop)(const struct __appsocket_cfg_t *cfg,int socketfd);//返回flase重启socket
+    bool (*onloop)(const struct __appsocket_cfg_t *cfg,int socketfd);//返回false重启socket
     //关闭前回调
     void (*before_close)(const struct __appsocket_cfg_t *cfg,int socketfd);
 
 } appsocket_cfg_t;
+
+
+//通过点分十进制IP地址获得地址struct openat_sockaddr_in
+struct openat_sockaddr_in appsocket_get_addr_by_ip(const char * ip,uint16_t port);
+
 
 //添加appsocket,失败返回负数,成功后返回appsocket_id(可用于删除)
 int appsocket_add(appsocket_cfg_t cfg);
