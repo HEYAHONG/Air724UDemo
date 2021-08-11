@@ -46,6 +46,7 @@ public:
 
     ~MQTTConnectInfo();
 
+    void set_clientid(const char *_clientid);
     void set_flags(int _flags);
     void set_keepalive(uint16_t _keepalive);
     bool set_username_and_password(char *_username,char *_password);

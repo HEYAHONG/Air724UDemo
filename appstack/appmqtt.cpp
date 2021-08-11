@@ -1,6 +1,9 @@
 ﻿#include "appmqtt.hpp"
 #include "config.h"
 #include "debug.h"
+#include "time.h"
+#include "stdio.h"
+#include "stdlib.h"
 #ifdef __cplusplus
 extern "C"
 {
@@ -108,6 +111,43 @@ MQTTConnectInfo::MQTTConnectInfo(MQTTConnectInfo &other)
     }
 }
 
+void MQTTConnectInfo::set_clientid(const char *_clientid)
+{
+    if(_clientid==NULL)
+    {
+        if(clientid==default_mqtt::clientid)
+        {
+            {
+                //clientid具有唯一性生成
+                T_AMOPENAT_SYSTEM_DATETIME date= {0};
+                iot_os_get_system_datetime(&date);
+                char buff[128]= {0};
+                sprintf(buff,"-%u-%u-%u-%u-%u-%u-%08X",date.nYear,date.nMonth,date.nDay,date.nHour,date.nMin,date.nSec,(unsigned int)iot_os_rand());
+                size_t totallength=strlen(clientid)+strlen(buff)+1;
+                char * new_clientid=(char *)iot_os_malloc(totallength);
+                memset(new_clientid,0,totallength);
+                strcat(new_clientid,clientid);
+                strcat(new_clientid,buff);
+                clientid=new_clientid;
+
+            }
+        }
+    }
+    else
+    {
+        char *old_clientid=clientid;
+        char *new_clientid=(char *)iot_os_malloc(strlen(_clientid)+1);
+        memset(new_clientid,0,strlen(_clientid)+1);
+        strcpy(new_clientid,_clientid);
+        clientid=new_clientid;
+        if(old_clientid!=default_mqtt::clientid)
+        {
+            iot_os_free(old_clientid);
+        }
+
+    }
+}
+
 void MQTTConnectInfo::set_flags(int _flags)
 {
     flags=_flags;
@@ -115,6 +155,10 @@ void MQTTConnectInfo::set_flags(int _flags)
 void MQTTConnectInfo::set_keepalive(uint16_t _keepalive)
 {
     keepalive=_keepalive;
+    if(keepalive<6)
+    {
+        keepalive=6;
+    }
 }
 bool MQTTConnectInfo::set_username_and_password(char *_username,char *_password)
 {
@@ -128,7 +172,8 @@ bool MQTTConnectInfo::set_username_and_password(char *_username,char *_password)
         memset(new_username,0,strlen(_username)+1);
         memcpy(new_username,_username,strlen(_username));
         username=new_username;
-        iot_os_free(old_username);
+        if(old_username!=default_mqtt::username)
+            iot_os_free(old_username);
     }
 
     {
@@ -137,7 +182,8 @@ bool MQTTConnectInfo::set_username_and_password(char *_username,char *_password)
         memset(new_password,0,strlen(_password)+1);
         memcpy(new_password,_password,strlen(_password));
         password=new_password;
-        iot_os_free(old_password);
+        if(old_password!=default_mqtt::password)
+            iot_os_free(old_password);
     }
     return true;
 }
@@ -153,7 +199,8 @@ bool MQTTConnectInfo::set_willdata(char * _will_topic,void * _will_payload,size_
         memset(new_will_topic,0,strlen(_will_topic)+1);
         memcpy(new_will_topic,_will_topic,strlen(_will_topic));
         will_topic=new_will_topic;
-        iot_os_free(old_will_topic);
+        if(old_will_topic!=default_mqtt::will_topic)
+            iot_os_free(old_will_topic);
     }
     {
         char *old_will_payload=(char *)will_payload;
@@ -161,7 +208,8 @@ bool MQTTConnectInfo::set_willdata(char * _will_topic,void * _will_payload,size_
         memcpy(new_will_payload,_will_payload,_will_payload_length);
         will_payload=new_will_payload;
         will_payload_length=_will_payload_length;
-        iot_os_free(old_will_payload);
+        if(old_will_payload!=default_mqtt::will_payload)
+            iot_os_free(old_will_payload);
     }
 
     return true;
@@ -252,6 +300,7 @@ void MQTT::appsocket_before_connect(const struct __appsocket_cfg_t * cfg,int soc
     MQTT &m=*(MQTT *)cfg->userptr;
     m.connectstate.isconnected=false;
     m.connectstate.socketfd=socket_fd;
+    m.connectinfo.set_clientid(NULL);//设置cliendid
 }
 //连接成功后回调函数
 void MQTT::appsocket_after_connect(const struct __appsocket_cfg_t *cfg,int socketfd)
