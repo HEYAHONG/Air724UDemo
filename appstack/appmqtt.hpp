@@ -18,7 +18,8 @@ extern uint64_t ms_per_tick;
 #endif // __cplusplus
 
 #ifdef __cplusplus
-
+#include "vector"
+#include "appstack.hpp"
 class MQTT;
 
 class MQTTConnectInfo
@@ -42,17 +43,32 @@ class MQTTConnectInfo
 
 public:
     MQTTConnectInfo();
-    MQTTConnectInfo(MQTTConnectInfo &other);
+    MQTTConnectInfo(const MQTTConnectInfo &other);
+    MQTTConnectInfo & operator =(const MQTTConnectInfo &other);
 
     ~MQTTConnectInfo();
 
-    void set_clientid(const char *_clientid);
+    void set_clientid(const char *_clientid,bool append_date=false);
     void set_flags(int _flags);
     void set_keepalive(uint16_t _keepalive);
     bool set_username_and_password(char *_username,char *_password);
     bool set_willdata(char * _will_topic,void * _will_payload,size_t _will_payload_length);
 
 
+};
+
+class MQTTSubscibeInfo
+{
+    friend class MQTT;
+    uint8_t * topic;
+    uint8_t     qos;
+public:
+    MQTTSubscibeInfo();
+    MQTTSubscibeInfo(const MQTTSubscibeInfo &other);
+    MQTTSubscibeInfo & operator =(const MQTTSubscibeInfo &other);
+    ~MQTTSubscibeInfo();
+    bool is_vailed();//是否有效
+    bool set_subscribe(char *_topic,uint8_t _qos);
 };
 
 class MQTT
@@ -71,6 +87,7 @@ class MQTT
         int socketfd;
         bool isconnected;
         bool ispendingdisconnect;
+        uint16_t mqttpackedid;
     } connectstate;
 
     struct
@@ -79,6 +96,13 @@ class MQTT
         bool is_send_req;
         bool is_send_req_2;
     } keepalivestate;
+
+    struct
+    {
+        AppLock lock;
+        std::vector<MQTTSubscibeInfo> Queue;
+    } subscribeinfo;
+
 public:
     MQTT(MQTTConnectInfo & _connectinfo,size_t MaxTxBuffSize,size_t MaxRxBuffSize,size_t MaxPayloadBuffSize);
     ~MQTT();
@@ -89,6 +113,8 @@ public:
     void disconnect();
 
     bool get_is_connected();
+
+    bool subscribe(char *topic,uint8_t qos);
 
     //appsocket相关回调
     //连接前回调函数

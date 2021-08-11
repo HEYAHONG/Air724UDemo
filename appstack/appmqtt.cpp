@@ -46,24 +46,24 @@ char *will_payload=(char *)CONFIG_APPMQTT_DEFAULT_WILL_PAYLOAD;
 
 MQTTConnectInfo::~MQTTConnectInfo()
 {
-    if(clientid!=default_mqtt::clientid)
+    if(clientid!=default_mqtt::clientid && clientid!=NULL)
     {
         iot_os_free(clientid);
     }
-    if(username!=default_mqtt::username)
+    if(username!=default_mqtt::username && username!=NULL)
     {
         iot_os_free(username);
     }
-    if(password!=default_mqtt::password)
+    if(password!=default_mqtt::password && password!=NULL)
     {
         iot_os_free(password);
     }
-    if(will_topic!=default_mqtt::will_topic)
+    if(will_topic!=default_mqtt::will_topic && will_topic!=NULL)
     {
         iot_os_free(will_topic);
     }
     will_payload_length=0;
-    if(will_payload!=default_mqtt::will_payload)
+    if(will_payload!=default_mqtt::will_payload && will_payload!=NULL)
     {
         iot_os_free(will_payload);
     }
@@ -81,7 +81,7 @@ MQTTConnectInfo::MQTTConnectInfo()
     keepalive=120;
 }
 
-MQTTConnectInfo::MQTTConnectInfo(MQTTConnectInfo &other)
+MQTTConnectInfo::MQTTConnectInfo(const MQTTConnectInfo &other)
 {
     if(&other!=this)
     {
@@ -111,11 +111,24 @@ MQTTConnectInfo::MQTTConnectInfo(MQTTConnectInfo &other)
     }
 }
 
-void MQTTConnectInfo::set_clientid(const char *_clientid)
+MQTTConnectInfo & MQTTConnectInfo::operator =(const MQTTConnectInfo &other)
+{
+    if(&other!=this)
+    {
+        set_clientid(other.clientid);
+        set_flags(other.flags);
+        set_keepalive(other.keepalive);
+        set_username_and_password(other.username,other.password);
+        set_willdata(other.will_topic,other.will_payload,other.will_payload_length);
+    }
+    return *this;
+}
+
+void MQTTConnectInfo::set_clientid(const char *_clientid,bool append_date)
 {
     if(_clientid==NULL)
     {
-        if(clientid==default_mqtt::clientid)
+        if(append_date)
         {
             {
                 //clientid具有唯一性生成
@@ -140,7 +153,7 @@ void MQTTConnectInfo::set_clientid(const char *_clientid)
         memset(new_clientid,0,strlen(_clientid)+1);
         strcpy(new_clientid,_clientid);
         clientid=new_clientid;
-        if(old_clientid!=default_mqtt::clientid)
+        if(old_clientid!=default_mqtt::clientid && old_clientid!=NULL)
         {
             iot_os_free(old_clientid);
         }
@@ -162,7 +175,7 @@ void MQTTConnectInfo::set_keepalive(uint16_t _keepalive)
 }
 bool MQTTConnectInfo::set_username_and_password(char *_username,char *_password)
 {
-    if(_username==NULL || password ==NULL)
+    if(_username==NULL || _password ==NULL)
     {
         return false;
     }
@@ -172,7 +185,7 @@ bool MQTTConnectInfo::set_username_and_password(char *_username,char *_password)
         memset(new_username,0,strlen(_username)+1);
         memcpy(new_username,_username,strlen(_username));
         username=new_username;
-        if(old_username!=default_mqtt::username)
+        if(old_username!=default_mqtt::username && old_username!=NULL)
             iot_os_free(old_username);
     }
 
@@ -182,14 +195,14 @@ bool MQTTConnectInfo::set_username_and_password(char *_username,char *_password)
         memset(new_password,0,strlen(_password)+1);
         memcpy(new_password,_password,strlen(_password));
         password=new_password;
-        if(old_password!=default_mqtt::password)
+        if(old_password!=default_mqtt::password && old_password!=NULL)
             iot_os_free(old_password);
     }
     return true;
 }
 bool MQTTConnectInfo::set_willdata(char * _will_topic,void * _will_payload,size_t _will_payload_length)
 {
-    if(_will_payload==NULL || _will_topic ==NULL)
+    if(_will_payload==NULL || _will_topic ==NULL || _will_payload_length==0)
     {
         return false;
     }
@@ -199,7 +212,7 @@ bool MQTTConnectInfo::set_willdata(char * _will_topic,void * _will_payload,size_
         memset(new_will_topic,0,strlen(_will_topic)+1);
         memcpy(new_will_topic,_will_topic,strlen(_will_topic));
         will_topic=new_will_topic;
-        if(old_will_topic!=default_mqtt::will_topic)
+        if(old_will_topic!=default_mqtt::will_topic && old_will_topic!=NULL)
             iot_os_free(old_will_topic);
     }
     {
@@ -208,10 +221,74 @@ bool MQTTConnectInfo::set_willdata(char * _will_topic,void * _will_payload,size_
         memcpy(new_will_payload,_will_payload,_will_payload_length);
         will_payload=new_will_payload;
         will_payload_length=_will_payload_length;
-        if(old_will_payload!=default_mqtt::will_payload)
+        if(old_will_payload!=default_mqtt::will_payload && old_will_payload!=NULL)
             iot_os_free(old_will_payload);
     }
 
+    return true;
+}
+
+MQTTSubscibeInfo::MQTTSubscibeInfo()
+{
+    topic=NULL;
+    qos=0;
+}
+
+MQTTSubscibeInfo::MQTTSubscibeInfo(const MQTTSubscibeInfo &other)
+{
+    if(this!=&other)
+    {
+        topic=NULL;
+        set_subscribe((char *)other.topic,other.qos);
+    }
+}
+MQTTSubscibeInfo & MQTTSubscibeInfo::operator =(const MQTTSubscibeInfo &other)
+{
+    if(this!=&other)
+    {
+        set_subscribe((char *)other.topic,other.qos);
+    }
+
+    return *this;
+}
+
+MQTTSubscibeInfo::~MQTTSubscibeInfo()
+{
+    if(topic!=NULL)
+    {
+        iot_os_free(topic);
+    }
+}
+bool MQTTSubscibeInfo::is_vailed()//是否有效
+{
+    if(topic!=NULL && strlen((char *)topic)>0)
+    {
+        return true;
+    }
+    return false;
+}
+bool MQTTSubscibeInfo::set_subscribe(char *_topic,uint8_t _qos)
+{
+    if(_topic==NULL || strlen((char *)_topic)==0)
+    {
+        return false;
+    }
+    {
+        uint8_t *old_topic=topic;
+        uint8_t *new_topic=(uint8_t *)iot_os_malloc(strlen(_topic)+1);
+        memset(new_topic,0,strlen(_topic)+1);
+        memcpy(new_topic,_topic,strlen(_topic));
+        topic=new_topic;
+        if(old_topic!=NULL)
+        {
+            iot_os_free(old_topic);
+        }
+    }
+    qos=_qos;
+    if(qos!=0 &&qos != MQTT_SUBSCRIBE_QOS2 && qos != MQTT_SUBSCRIBE_QOS1)
+    {
+        qos=0;
+    }
     return true;
 }
 
@@ -219,6 +296,7 @@ bool MQTTConnectInfo::set_willdata(char * _will_topic,void * _will_payload,size_
 MQTT::MQTT(MQTTConnectInfo  & _connectinfo,size_t MaxTxBuffSize,size_t MaxRxBuffSize,size_t MaxPayloadBuffSize)
 {
     connectinfo=_connectinfo;
+
     TxBuffSize=MaxTxBuffSize;
     if(TxBuffSize<CONFIG_APPMQTT_MAX_TXBUFFSIZE)
     {
@@ -297,6 +375,30 @@ bool MQTT::get_is_connected()
     return connectstate.isconnected;
 }
 
+bool MQTT::subscribe(char *topic,uint8_t qos)
+{
+    if(!get_is_connected())
+    {
+        return false;
+    }
+    MQTTSubscibeInfo sub;
+    sub.set_subscribe(topic,qos);
+
+    if(sub.is_vailed())
+    {
+
+        subscribeinfo.lock.take();
+
+        subscribeinfo.Queue.push_back(sub);
+
+        subscribeinfo.lock.release();
+
+        app_debug_print("%s:add subscribe to queue!!!\n\r",TAG);
+    }
+
+    return sub.is_vailed();
+}
+
 //连接前回调函数
 void MQTT::appsocket_before_connect(const struct __appsocket_cfg_t * cfg,int socket_fd)
 {
@@ -304,7 +406,11 @@ void MQTT::appsocket_before_connect(const struct __appsocket_cfg_t * cfg,int soc
     m.connectstate.isconnected=false;
     m.connectstate.ispendingdisconnect=false;
     m.connectstate.socketfd=socket_fd;
-    m.connectinfo.set_clientid(NULL);//设置cliendid
+    if(strcmp((char *)default_mqtt::clientid,(char *)m.connectinfo.clientid)==0)
+    {
+        m.connectinfo.set_clientid(NULL,true);//使用cliendid
+    }
+
 }
 //连接成功后回调函数
 void MQTT::appsocket_after_connect(const struct __appsocket_cfg_t *cfg,int socketfd)
@@ -376,6 +482,9 @@ void MQTT::appsocket_after_connect(const struct __appsocket_cfg_t *cfg,int socke
             iot_os_sleep(3000);
             return;
         }
+
+        m.connectstate.mqttpackedid=head.PackID;
+
         if(head.Cmd!= MQTT_CMD_CONNACK)
         {
             m.connectstate.isconnected=false;
@@ -428,6 +537,7 @@ bool MQTT::appsocket_onloop(const struct __appsocket_cfg_t *cfg,int socketfd)//�
                 //默认一次就接收一个数据包，其余情况暂时忽略。若数据包很大则考虑调整socket的接收超时
                 if(Payload!=(uint8_t *)INVALID_HANDLE_VALUE)
                 {
+                    m.connectstate.mqttpackedid=head.PackID;
                     switch(head.Cmd)
                     {
                     case MQTT_CMD_PUBLISH:
@@ -494,6 +604,12 @@ bool MQTT::appsocket_onloop(const struct __appsocket_cfg_t *cfg,int socketfd)//�
                     }
                     break;
 
+                    case MQTT_CMD_SUBACK:
+                    {
+                        app_debug_print("%s:subscribe ack !!! packageid=%u\n\r",TAG,head.PackID);
+                    }
+                    break;
+
                     default:
                         break;
                     }
@@ -544,6 +660,51 @@ bool MQTT::appsocket_onloop(const struct __appsocket_cfg_t *cfg,int socketfd)//�
                     }
                 }
             }
+        }
+
+    }
+
+    {
+        //检查订阅
+        if(!Is_Send)
+        {
+
+            if(m.subscribeinfo.Queue.size()>0)
+            {
+                MQTTSubscibeInfo info;
+                m.subscribeinfo.lock.take();
+
+
+                {
+                    info=m.subscribeinfo.Queue.front();
+                    m.subscribeinfo.Queue.erase(m.subscribeinfo.Queue.begin());
+                }
+
+                m.subscribeinfo.lock.release();
+
+                app_debug_print("%s:read subscribe from queue!!!\n\r",TAG);
+
+                if(info.is_vailed())
+                {
+                    MQTT_SubscribeStruct sub[1];
+                    sub[0].Char=info.topic;
+                    sub[0].Qos=info.qos;
+                    {
+                        m.connectstate.mqttpackedid++;
+                        Buffer_Struct TxBuff= {(uint8_t *)m.TxBuff,0,m.TxBuffSize};
+                        Buffer_Struct PayloadBuff={(uint8_t *)m.PayloadBuff,0,m.PayloadBuffSize};
+                        int TxLen=MQTT_SubscribeMsg(&TxBuff,&PayloadBuff,m.connectstate.mqttpackedid,sub,1);
+                        if(TxLen>0)
+                        {
+                            app_debug_print("%s:send subscribe !!! %d bytes,packageid=%u\n\r",TAG,TxLen,m.connectstate.mqttpackedid);
+                            send(socketfd,m.TxBuff,TxLen,0);
+                            Is_Send=true;
+                        }
+                    }
+                }
+            }
+
+
         }
 
     }

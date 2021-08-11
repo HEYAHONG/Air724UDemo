@@ -76,6 +76,7 @@ int appimg_enter(void *param)
 
 #if CONFIG_APP_DEBUG == 1
     iot_debug_set_fault_mode(OPENAT_FAULT_HANG);
+    iot_os_set_trace_port(4);
 #endif // CONFIG_APP_DEBUG
 
     iot_pmd_exit_deepsleep();
