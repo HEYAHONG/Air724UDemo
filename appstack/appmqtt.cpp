@@ -103,10 +103,17 @@ MQTTConnectInfo::MQTTConnectInfo(const MQTTConnectInfo &other)
         will_topic=(char *)iot_os_malloc(strlen(other.will_topic)+1);
         memset(will_topic,0,strlen(other.will_topic)+1);
         memcpy(will_topic,other.will_topic,strlen(other.will_topic));
-
-        will_payload_length=other.will_payload_length;
-        will_payload=iot_os_malloc(will_payload_length);
-        memcpy(will_payload,other.will_payload,will_payload_length);
+        if(other.will_payload_length!=0)
+        {
+            will_payload_length=other.will_payload_length;
+            will_payload=iot_os_malloc(will_payload_length);
+            memcpy(will_payload,other.will_payload,will_payload_length);
+        }
+        else
+        {
+            will_payload_length=other.will_payload_length;
+            will_payload=default_mqtt::will_payload;
+        }
 
     }
 }
