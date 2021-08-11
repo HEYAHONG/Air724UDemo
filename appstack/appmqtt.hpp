@@ -10,6 +10,8 @@ extern "C"
 #endif // __cplusplus
 
 #include "iot_os.h"
+extern uint64_t ms_per_tick;
+
 
 #ifdef __cplusplus
 };
@@ -68,6 +70,13 @@ class MQTT
         int socketfd;
         bool isconnected;
     } connectstate;
+
+    struct
+    {
+        uint64_t last_tick;
+        bool is_send_req;
+        bool is_send_req_2;
+    } keepalivestate;
 public:
     MQTT(MQTTConnectInfo & _connectinfo,size_t MaxTxBuffSize,size_t MaxRxBuffSize,size_t MaxPayloadBuffSize);
     ~MQTT();

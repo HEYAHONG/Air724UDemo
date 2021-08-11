@@ -13,6 +13,8 @@
 
 HANDLE main_task_handle=NULL;
 
+uint64_t ms_per_tick=5;
+
 static  __unused  const char * TAG="main";
 
 static void main_task(PVOID pParameter)
@@ -21,7 +23,16 @@ static void main_task(PVOID pParameter)
 
     app_debug_print("%s:%s",TAG,CONFIG_APP_ENTER_MESSAGE"\n\r");
 
-    iot_os_sleep(500);//延时500ms
+    {
+        uint64_t current_tick=iot_os_get_system_tick();
+        app_debug_print("%s:current tick=%u\n\r",TAG,current_tick);
+        iot_os_sleep(500);//延时500ms
+        uint64_t current_tick_after_500ms=iot_os_get_system_tick();
+        app_debug_print("%s:current tick=%u after 500ms\n\r",TAG,current_tick_after_500ms);
+        ms_per_tick=(500/(current_tick_after_500ms-current_tick));
+        app_debug_print("%s:ms_per_tick=%u\n\r",TAG,ms_per_tick);
+    }
+
 
     app_init();
 

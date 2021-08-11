@@ -346,6 +346,10 @@ void MQTT::appsocket_after_connect(const struct __appsocket_cfg_t *cfg,int socke
 
     }
 
+    m.keepalivestate.last_tick=iot_os_get_system_tick();
+    m.keepalivestate.is_send_req=false;
+    m.keepalivestate.is_send_req_2=false;
+
     m.connectstate.isconnected=true;
 
 }
@@ -353,6 +357,115 @@ void MQTT::appsocket_after_connect(const struct __appsocket_cfg_t *cfg,int socke
 bool MQTT::appsocket_onloop(const struct __appsocket_cfg_t *cfg,int socketfd)//返回false重启socket
 {
     MQTT &m=*(MQTT *)cfg->userptr;
+
+    bool Is_Send=false;//是否发送过(防止一次发送多个包)
+
+    {
+        //接收数据
+        int RxLen=recv(socketfd,m.RxBuff,m.RxBuffSize,0);
+        if(RxLen>0)
+        {
+            MQTT_HeadStruct head= {0};
+            head.Data=(uint8_t *)m.PayloadBuff;
+            uint8_t *Payload = NULL;
+            uint32_t PayloadLen=0;
+            uint32_t DealLen=0;
+            Payload=MQTT_DecodeMsg(&head,m.PayloadBuffSize,&PayloadLen,(uint8_t *)m.RxBuff,RxLen,&DealLen);
+            {
+                //默认一次就接收一个数据包，其余情况暂时忽略。若数据包很大则考虑调整socket的接收超时
+                if(Payload!=(uint8_t *)INVALID_HANDLE_VALUE)
+                {
+                    switch(head.Cmd)
+                    {
+                    case MQTT_CMD_PUBREC:
+                    {
+                        Buffer_Struct TxBuff= {(uint8_t *)m.TxBuff,0,m.TxBuffSize};
+                        int TxLen=MQTT_PublishCtrlMsg(&TxBuff,MQTT_CMD_PUBREL,head.PackID);
+                        if(TxLen>0)
+                        {
+                            send(socketfd,m.TxBuff,TxLen,0);
+                            Is_Send=true;
+                        }
+
+                    }
+                    break;
+                    case MQTT_CMD_PUBREL:
+                    {
+                        Buffer_Struct TxBuff= {(uint8_t *)m.TxBuff,0,m.TxBuffSize};
+                        int TxLen=MQTT_PublishCtrlMsg(&TxBuff,MQTT_CMD_PUBCOMP,head.PackID);
+                        if(TxLen>0)
+                        {
+                            send(socketfd,m.TxBuff,TxLen,0);
+                            Is_Send=true;
+                        }
+                    }
+                    break;
+                    case MQTT_CMD_PINGRESP:
+                    {
+                        m.keepalivestate.last_tick=iot_os_get_system_tick();
+                        m.keepalivestate.is_send_req=false;
+                        m.keepalivestate.is_send_req_2=false;
+                        app_debug_print("%s:receive pingresq!!!tick=%u\n\r",TAG,m.keepalivestate.last_tick);
+                    }
+                    break;
+
+                    default:
+                        break;
+                    }
+                }
+
+            }
+        }
+
+    }
+
+    if(!Is_Send)
+    {
+        //准备ping
+        if(((iot_os_get_system_tick()-m.keepalivestate.last_tick)/(1000/ms_per_tick))>m.connectinfo.keepalive/2)
+        {
+            if(!m.keepalivestate.is_send_req)
+            {
+                //未发送ping
+                Buffer_Struct TxBuff= {(uint8_t *)m.TxBuff,0,m.TxBuffSize};
+                int TxLen=MQTT_SingleMsg(&TxBuff, MQTT_CMD_PINGREQ);;
+                if(TxLen>0)
+                {
+                    app_debug_print("%s:send pingreq!!!\n\r",TAG);
+                    send(socketfd,m.TxBuff,TxLen,0);
+                    Is_Send=true;
+                }
+                m.keepalivestate.is_send_req=true;
+            }
+            else
+            {
+                if(((iot_os_get_system_tick()-m.keepalivestate.last_tick)/(1000/ms_per_tick))>m.connectinfo.keepalive*3/4)
+                {
+                    //再试一次
+                    if(!m.keepalivestate.is_send_req_2)
+                    {
+                        m.keepalivestate.is_send_req_2=true;
+                        m.keepalivestate.is_send_req=false;//重发
+                    }
+
+                }
+                else
+                {
+                    //断开连接，重连
+                    if(((iot_os_get_system_tick()-m.keepalivestate.last_tick)/(1000/ms_per_tick))>m.connectinfo.keepalive)
+                    {
+                        app_debug_print("%s:wait pingresp failed!!!\n\r",TAG);
+                        return false;
+                    }
+                }
+            }
+        }
+
+    }
+
+
+
+
 
 
     if(m.connectstate.isconnected)

@@ -16,6 +16,8 @@ void app_exit();
 
 uint8_t app_get_auto_task_priority();
 
+    extern uint64_t ms_per_tick;
+
 #ifdef __cplusplus
 }
 #endif // __cplusplus
