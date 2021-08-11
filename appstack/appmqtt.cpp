@@ -692,7 +692,7 @@ bool MQTT::appsocket_onloop(const struct __appsocket_cfg_t *cfg,int socketfd)//è
                     {
                         m.connectstate.mqttpackedid++;
                         Buffer_Struct TxBuff= {(uint8_t *)m.TxBuff,0,m.TxBuffSize};
-                        Buffer_Struct PayloadBuff={(uint8_t *)m.PayloadBuff,0,m.PayloadBuffSize};
+                        Buffer_Struct PayloadBuff= {(uint8_t *)m.PayloadBuff,0,m.PayloadBuffSize};
                         int TxLen=MQTT_SubscribeMsg(&TxBuff,&PayloadBuff,m.connectstate.mqttpackedid,sub,1);
                         if(TxLen>0)
                         {
