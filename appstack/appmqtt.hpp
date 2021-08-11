@@ -70,6 +70,7 @@ class MQTT
         int appsocketid;
         int socketfd;
         bool isconnected;
+        bool ispendingdisconnect;
     } connectstate;
 
     struct

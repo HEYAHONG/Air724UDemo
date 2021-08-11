@@ -283,9 +283,12 @@ void MQTT::disconnect()
 {
     if(connectstate.appsocketid>=0)
     {
+        connectstate.ispendingdisconnect=true;
+        iot_os_sleep(100);
         appsocket_remove(connectstate.appsocketid);
         connectstate.socketfd=-1;
         connectstate.appsocketid=-1;
+        connectstate.ispendingdisconnect=false;
     }
 }
 
@@ -299,6 +302,7 @@ void MQTT::appsocket_before_connect(const struct __appsocket_cfg_t * cfg,int soc
 {
     MQTT &m=*(MQTT *)cfg->userptr;
     m.connectstate.isconnected=false;
+    m.connectstate.ispendingdisconnect=false;
     m.connectstate.socketfd=socket_fd;
     m.connectinfo.set_clientid(NULL);//设置cliendid
 }
@@ -545,8 +549,31 @@ bool MQTT::appsocket_onloop(const struct __appsocket_cfg_t *cfg,int socketfd)//�
     }
 
 
+    {
+        //检查是否断开连接
+        if(!Is_Send)
+        {
+            if(m.connectstate.ispendingdisconnect)
+            {
+                {
+                    //发送disconnect
+                    Buffer_Struct TxBuff= {(uint8_t *)m.TxBuff,0,m.TxBuffSize};
+                    int TxLen=MQTT_SingleMsg(&TxBuff,MQTT_CMD_DISCONNECT);
+                    if(TxLen>0)
+                    {
+                        send(socketfd,m.TxBuff,TxLen,0);
+                        Is_Send=true;
+                    }
+                }
 
-
+                //等待任务被删除
+                for(size_t i=0; i<60; i++)
+                {
+                    iot_os_sleep(1000);
+                }
+            }
+        }
+    }
 
 
     if(m.connectstate.isconnected)
