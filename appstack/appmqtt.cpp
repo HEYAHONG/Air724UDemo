@@ -426,6 +426,38 @@ bool MQTT::appsocket_onloop(const struct __appsocket_cfg_t *cfg,int socketfd)//è
                 {
                     switch(head.Cmd)
                     {
+                    case MQTT_CMD_PUBLISH:
+                    {
+                        switch(head.Flag&MQTT_MSG_QOS_MASK)
+                        {
+                        case MQTT_MSG_QOS1:
+                        {
+                            Buffer_Struct TxBuff= {(uint8_t *)m.TxBuff,0,m.TxBuffSize};
+                            int TxLen=MQTT_PublishCtrlMsg(&TxBuff,MQTT_CMD_PUBACK,head.PackID);
+                            if(TxLen>0)
+                            {
+                                send(socketfd,m.TxBuff,TxLen,0);
+                                Is_Send=true;
+                            }
+                        }
+                        break;
+                        case MQTT_MSG_QOS2:
+                        {
+                            Buffer_Struct TxBuff= {(uint8_t *)m.TxBuff,0,m.TxBuffSize};
+                            int TxLen=MQTT_PublishCtrlMsg(&TxBuff,MQTT_CMD_PUBREL,head.PackID);
+                            if(TxLen>0)
+                            {
+                                send(socketfd,m.TxBuff,TxLen,0);
+                                Is_Send=true;
+                            }
+                        }
+                        break;
+                        default:
+                            break;
+                        }
+
+                    }
+                    break;
                     case MQTT_CMD_PUBREC:
                     {
                         Buffer_Struct TxBuff= {(uint8_t *)m.TxBuff,0,m.TxBuffSize};
@@ -454,7 +486,7 @@ bool MQTT::appsocket_onloop(const struct __appsocket_cfg_t *cfg,int socketfd)//è
                         m.keepalivestate.last_tick=iot_os_get_system_tick();
                         m.keepalivestate.is_send_req=false;
                         m.keepalivestate.is_send_req_2=false;
-                        app_debug_print("%s:receive pingresq!!!tick=%u\n\r",TAG,m.keepalivestate.last_tick);
+                        app_debug_print("%s:receive pingresp!!!tick=%u\n\r",TAG,m.keepalivestate.last_tick);
                     }
                     break;
 
