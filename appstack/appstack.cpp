@@ -19,31 +19,39 @@ extern "C"
 }
 
 MQTT *ptr=NULL;
+//连接
+static void mqtt_on_connect(class MQTT &client)
+{
+    client.subscribe((char *)"air724ug/json/cmd",0);
+}
+//丢失连接
+static  void mqtt_on_disconnect(class MQTT &client)
+{
+
+}
+
+//数据
+static  void mqtt_on_data(class MQTT &client,char * topic,size_t topiclen,void *payload,size_t payloadlen,uint8_t qos,int retain)
+{
+    app_debug_print("%s:mqtt topic=%s,payload=%s(%u Bytes)\n\r",TAG,topic,payload,payloadlen);
+}
+
 
 void app_init()
 {
     MQTTConnectInfo mqttinfo;
+    MQTTCallback cb;
+    cb.on_connect=mqtt_on_connect;
+    cb.on_disconnect=mqtt_on_disconnect;
+    cb.on_data=mqtt_on_data;
     ptr=new MQTT(mqttinfo,0,0,0);
+    ptr->set_callback(cb);
     ptr->connect("116.85.50.218",1883);
 }
 
-static bool issubscribe=false;
 bool app_loop()
 {
 
-    {
-
-        if(!issubscribe)
-        {
-            if(ptr->get_is_connected())
-            {
-                if(ptr->subscribe((char *)"air724ug/json/cmd",0))
-                {
-                    issubscribe=true;
-                }
-            }
-        }
-    }
 
     return true;
 }

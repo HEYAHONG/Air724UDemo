@@ -71,6 +71,19 @@ public:
     bool set_subscribe(char *_topic,uint8_t _qos);
 };
 
+class MQTTCallback
+{
+public:
+    MQTTCallback();
+    //连接
+    void (*on_connect)(class MQTT &client);
+    //丢失连接
+    void (*on_disconnect)(class MQTT &client);
+
+    //数据
+    void (*on_data)(class MQTT &client,char * topic,size_t topiclen,void *payload,size_t payloadlen,uint8_t qos,int retain);
+};
+
 class MQTT
 {
     MQTTConnectInfo connectinfo;
@@ -103,6 +116,8 @@ class MQTT
         std::queue<MQTTSubscibeInfo> Queue;
     } subscribeinfo;
 
+    MQTTCallback callback;
+
 public:
     MQTT(MQTTConnectInfo & _connectinfo,size_t MaxTxBuffSize,size_t MaxRxBuffSize,size_t MaxPayloadBuffSize);
     ~MQTT();
@@ -115,6 +130,8 @@ public:
     bool get_is_connected();
 
     bool subscribe(char *topic,uint8_t qos);
+
+    void set_callback(MQTTCallback cb);
 
     //appsocket相关回调
     //连接前回调函数

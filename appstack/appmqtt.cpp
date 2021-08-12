@@ -299,6 +299,13 @@ bool MQTTSubscibeInfo::set_subscribe(char *_topic,uint8_t _qos)
     return true;
 }
 
+MQTTCallback::MQTTCallback()
+{
+    on_data=NULL;
+    on_connect=NULL;
+    on_disconnect=NULL;
+}
+
 //构造函数
 MQTT::MQTT(MQTTConnectInfo  & _connectinfo,size_t MaxTxBuffSize,size_t MaxRxBuffSize,size_t MaxPayloadBuffSize)
 {
@@ -348,6 +355,8 @@ bool MQTT::connect(const char *ip,uint16_t port)
     cfg.server_addr=appsocket_get_addr_by_ip(ip,port);
 
     cfg.userptr=this;//传递this指针
+
+    cfg.task_stack_size=RxBuffSize+2048;//足够大的栈空间用于执行回调函数
 
     cfg.before_connect=appsocket_before_connect;
     cfg.after_connect=appsocket_after_connect;
@@ -405,6 +414,11 @@ bool MQTT::subscribe(char *topic,uint8_t qos)
 
     return sub.is_vailed();
 }
+
+ void MQTT::set_callback(MQTTCallback cb)
+ {
+     callback=cb;
+ }
 
 //连接前回调函数
 void MQTT::appsocket_before_connect(const struct __appsocket_cfg_t * cfg,int socket_fd)
@@ -521,6 +535,12 @@ void MQTT::appsocket_after_connect(const struct __appsocket_cfg_t *cfg,int socke
 
     m.connectstate.isconnected=true;
 
+    //调用连接回调
+    if(m.callback.on_connect!=NULL)
+    {
+        m.callback.on_connect(m);
+    }
+
 }
 //成功连接后循环内回调函数(只能进行发送与接收操作),不可长时间阻塞
 bool MQTT::appsocket_onloop(const struct __appsocket_cfg_t *cfg,int socketfd)//返回false重启socket
@@ -549,6 +569,29 @@ bool MQTT::appsocket_onloop(const struct __appsocket_cfg_t *cfg,int socketfd)//�
                     {
                     case MQTT_CMD_PUBLISH:
                     {
+                        {//需要足够大的栈空间执行回调函数
+                            if(m.callback.on_data!=NULL && head.DataLen>0)
+                            {
+                                char topic[head.DataLen+1]={0};
+                                memcpy(topic,head.Data,head.DataLen);
+                                int qos=0;
+                                int retain=0;
+                                if(head.Flag&MQTT_MSG_QOS1)
+                                {
+                                    qos=1;
+                                }
+                                if(head.Flag&MQTT_MSG_QOS2)
+                                {
+                                    qos=2;
+                                }
+                                if(head.Flag&MQTT_MSG_RETAIN)
+                                {
+                                    retain=1;
+                                }
+
+                                m.callback.on_data(m,topic,head.DataLen,Payload,PayloadLen,qos,retain);
+                            }
+                        }
                         switch(head.Flag&MQTT_MSG_QOS_MASK)
                         {
                         case MQTT_MSG_QOS1:
@@ -759,6 +802,12 @@ void MQTT::appsocket_before_close(const struct __appsocket_cfg_t *cfg,int socket
     MQTT &m=*(MQTT *)cfg->userptr;
     m.connectstate.isconnected=false;
     m.connectstate.socketfd=-1;
+
+    //调用连接丢失回调
+    if(m.callback.on_disconnect!=NULL)
+    {
+        m.callback.on_disconnect(m);
+    }
 
 }
 
