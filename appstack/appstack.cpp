@@ -34,6 +34,7 @@ static  void mqtt_on_disconnect(class MQTT &client)
 static  void mqtt_on_data(class MQTT &client,char * topic,size_t topiclen,void *payload,size_t payloadlen,uint8_t qos,int retain)
 {
     app_debug_print("%s:mqtt topic=%s,payload=%s(%u Bytes)\n\r",TAG,topic,payload,payloadlen);
+    client.publish((char *)"air724ug/json/cmd/echo",payload,payloadlen);
 }
 
 

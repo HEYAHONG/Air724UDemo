@@ -306,6 +306,96 @@ MQTTCallback::MQTTCallback()
     on_disconnect=NULL;
 }
 
+
+MQTTPublishInfo::MQTTPublishInfo()
+{
+    qos=0;
+    retain=0;
+    topic=NULL;
+    payload=NULL;
+    payload_length=0;
+}
+MQTTPublishInfo::MQTTPublishInfo(const MQTTPublishInfo &other)
+{
+    qos=0;
+    retain=0;
+    topic=NULL;
+    payload=NULL;
+    payload_length=0;
+    if(this!=&other)
+    {
+        set_publish(other.topic,other.payload,other.payload_length,other.qos,other.retain);
+    }
+}
+MQTTPublishInfo &MQTTPublishInfo::operator =(const MQTTPublishInfo &other)
+{
+    if(this!=&other)
+    {
+        set_publish(other.topic,other.payload,other.payload_length,other.qos,other.retain);
+    }
+    return *this;
+}
+MQTTPublishInfo::~MQTTPublishInfo()
+{
+    if(topic!=NULL)
+    {
+        iot_os_free(topic);
+    }
+    if(payload!=NULL)
+    {
+        iot_os_free(payload);
+    }
+}
+
+bool MQTTPublishInfo::is_vailed()//是否有效
+{
+    if(topic==NULL || strlen((char *)topic)==0)
+    {
+        return false;
+    }
+    return true;
+}
+void MQTTPublishInfo::set_publish(char *_topic,void *_payload,size_t _payload_length,uint8_t _qos,int _retain)
+{
+    if(_topic==NULL || strlen((char *)_topic)==0)
+    {
+        return;
+    }
+    qos=_qos;
+    retain=_retain;
+    {
+        char *old_topic=topic;
+        char *new_topic=(char *)iot_os_malloc(strlen(_topic)+1);
+        memset(new_topic,0,strlen(_topic)+1);
+        memcpy(new_topic,_topic,strlen(_topic));
+        topic=new_topic;
+        if(old_topic!=NULL)
+        {
+            iot_os_free(old_topic);
+        }
+    }
+    {
+        void *old_payload=payload;
+        if(_payload!=NULL && _payload_length!=0)
+        {
+            payload=iot_os_malloc(_payload_length);
+            memcpy(payload,_payload,_payload_length);
+            payload_length=_payload_length;
+        }
+        else
+        {
+            payload=NULL;
+            payload_length=0;
+        }
+        if(old_payload!=NULL)
+        {
+            iot_os_free(old_payload);
+        }
+    }
+
+}
+
+
 //构造函数
 MQTT::MQTT(MQTTConnectInfo  & _connectinfo,size_t MaxTxBuffSize,size_t MaxRxBuffSize,size_t MaxPayloadBuffSize)
 {
@@ -415,10 +505,35 @@ bool MQTT::subscribe(char *topic,uint8_t qos)
     return sub.is_vailed();
 }
 
- void MQTT::set_callback(MQTTCallback cb)
- {
-     callback=cb;
- }
+bool MQTT::publish(char *_topic,void *_payload,size_t _payload_length,uint8_t _qos,int _retain)
+{
+    if(!get_is_connected())
+    {
+        return false;
+    }
+    MQTTPublishInfo pub;
+
+    pub.set_publish(_topic,_payload,_payload_length,_qos,_retain);
+
+    if(pub.is_vailed())
+    {
+
+        publishinfo.lock.take();
+
+        publishinfo.Queue.push(pub);
+
+        publishinfo.lock.release();
+
+        app_debug_print("%s:add publish to queue!!!\n\r",TAG);
+    }
+
+    return pub.is_vailed();
+}
+
+void MQTT::set_callback(MQTTCallback cb)
+{
+    callback=cb;
+}
 
 //连接前回调函数
 void MQTT::appsocket_before_connect(const struct __appsocket_cfg_t * cfg,int socket_fd)
@@ -569,10 +684,11 @@ bool MQTT::appsocket_onloop(const struct __appsocket_cfg_t *cfg,int socketfd)//�
                     {
                     case MQTT_CMD_PUBLISH:
                     {
-                        {//需要足够大的栈空间执行回调函数
+                        {
+                            //需要足够大的栈空间执行回调函数
                             if(m.callback.on_data!=NULL && head.DataLen>0)
                             {
-                                char topic[head.DataLen+1]={0};
+                                char topic[head.DataLen+1]= {0};
                                 memcpy(topic,head.Data,head.DataLen);
                                 int qos=0;
                                 int retain=0;
@@ -758,6 +874,62 @@ bool MQTT::appsocket_onloop(const struct __appsocket_cfg_t *cfg,int socketfd)//�
         }
 
     }
+
+    {
+        //检查发布
+        if(!Is_Send)
+        {
+
+            if(m.publishinfo.Queue.size()>0)
+            {
+                MQTTPublishInfo info;
+                m.publishinfo.lock.take();
+
+
+                {
+                    info=m.publishinfo.Queue.front();
+                    m.publishinfo.Queue.pop();
+                }
+
+                m.publishinfo.lock.release();
+
+                app_debug_print("%s:read publish from queue!!!\n\r",TAG);
+
+                if(info.is_vailed())
+                {
+                    {
+                        m.connectstate.mqttpackedid++;
+                        uint8_t flags=0;
+                        if(info.retain)
+                        {
+                            flags|=MQTT_MSG_RETAIN;
+                        }
+                        if(info.qos==1)
+                        {
+                            flags|=MQTT_MSG_QOS1;
+                        }
+                        if(info.qos==2)
+                        {
+                            flags|=MQTT_MSG_QOS2;
+                        }
+
+                        Buffer_Struct TxBuff= {(uint8_t *)m.TxBuff,0,m.TxBuffSize};
+                        int TxLen=MQTT_PublishMsg(&TxBuff,flags,m.connectstate.mqttpackedid,(const int8_t *)info.topic,(uint8_t *)info.payload,info.payload_length);
+                        if(TxLen>0)
+                        {
+                            app_debug_print("%s:send publish !!! %d bytes,packageid=%u\n\r",TAG,TxLen,m.connectstate.mqttpackedid);
+                            send(socketfd,m.TxBuff,TxLen,0);
+                            Is_Send=true;
+                        }
+                    }
+                }
+            }
+
+
+        }
+
+    }
+
 
 
     {

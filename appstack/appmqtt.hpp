@@ -84,6 +84,25 @@ public:
     void (*on_data)(class MQTT &client,char * topic,size_t topiclen,void *payload,size_t payloadlen,uint8_t qos,int retain);
 };
 
+class MQTTPublishInfo
+{
+    friend class MQTT;
+    uint8_t qos;
+    int retain;
+    char *topic;
+    void *payload;
+    size_t payload_length;
+
+public:
+    MQTTPublishInfo();
+    MQTTPublishInfo(const MQTTPublishInfo &other);
+    MQTTPublishInfo &operator =(const MQTTPublishInfo &other);
+    ~MQTTPublishInfo();
+
+    bool is_vailed();//是否有效
+    void set_publish(char *_topic,void *_payload,size_t _payload_length,uint8_t _qos,int _retain);
+};
+
 class MQTT
 {
     MQTTConnectInfo connectinfo;
@@ -118,6 +137,12 @@ class MQTT
 
     MQTTCallback callback;
 
+    struct
+    {
+        AppLock lock;
+        std::queue<MQTTPublishInfo> Queue;
+    } publishinfo;
+
 public:
     MQTT(MQTTConnectInfo & _connectinfo,size_t MaxTxBuffSize,size_t MaxRxBuffSize,size_t MaxPayloadBuffSize);
     ~MQTT();
@@ -129,7 +154,9 @@ public:
 
     bool get_is_connected();
 
-    bool subscribe(char *topic,uint8_t qos);
+    bool subscribe(char *topic,uint8_t qos=0);
+
+    bool publish(char *_topic,void *_payload,size_t _payload_length,uint8_t _qos=0,int _retain=0);
 
     void set_callback(MQTTCallback cb);
 
