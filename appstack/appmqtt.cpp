@@ -396,7 +396,7 @@ bool MQTT::subscribe(char *topic,uint8_t qos)
 
         subscribeinfo.lock.take();
 
-        subscribeinfo.Queue.push_back(sub);
+        subscribeinfo.Queue.push(sub);
 
         subscribeinfo.lock.release();
 
@@ -684,7 +684,7 @@ bool MQTT::appsocket_onloop(const struct __appsocket_cfg_t *cfg,int socketfd)//è
 
                 {
                     info=m.subscribeinfo.Queue.front();
-                    m.subscribeinfo.Queue.erase(m.subscribeinfo.Queue.begin());
+                    m.subscribeinfo.Queue.pop();
                 }
 
                 m.subscribeinfo.lock.release();

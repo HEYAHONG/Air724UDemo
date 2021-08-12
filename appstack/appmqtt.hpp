@@ -18,7 +18,7 @@ extern uint64_t ms_per_tick;
 #endif // __cplusplus
 
 #ifdef __cplusplus
-#include "vector"
+#include "queue"
 #include "appstack.hpp"
 class MQTT;
 
@@ -100,7 +100,7 @@ class MQTT
     struct
     {
         AppLock lock;
-        std::vector<MQTTSubscibeInfo> Queue;
+        std::queue<MQTTSubscibeInfo> Queue;
     } subscribeinfo;
 
 public:
