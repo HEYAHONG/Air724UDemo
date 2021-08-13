@@ -33,6 +33,12 @@ git clone -b HYH https://github.com/HEYAHONG/Luat_CSDK_Air724U.git
 - build.bat:构建工程文件(condeblocks工程文件在build目录中)并编译。
 - menuconfig.bat:配置Kconfig。
 
+# 软件说明
+
+## 调试输出
+
+采用UART2输出调试信息，通过串口调试查看。波特率:921600 8N1。
+
 
 
 
