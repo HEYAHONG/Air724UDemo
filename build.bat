@@ -18,7 +18,7 @@ set FOTA_FLAG=%1
 set FOTA_TYPE=%2
 
 @rem 设置AM_MODEL,选择不同的核心功能(见%CSDK_INSTALL_PATH%\core目录） 
-set AM_MODEL=iot_SDK_720U
+set AM_MODEL=iot_SDK_720U_BT_TTS_VOLTE
 
 @rem 添加CSDK中的工具
 mklink /d /j   "%PROJECT_PATH%\csdk" "%CSDK_INSTALL_PATH%"  1>nul 2>nul
