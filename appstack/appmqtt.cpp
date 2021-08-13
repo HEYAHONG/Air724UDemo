@@ -694,59 +694,80 @@ bool MQTT::appsocket_onloop(const struct __appsocket_cfg_t *cfg,int socketfd)//�
         int RxLen=recv(socketfd,m.RxBuff,m.RxBuffSize,0);
         if(RxLen>0)
         {
-            MQTT_HeadStruct head= {0};
-            head.Data=(uint8_t *)m.PayloadBuff;
-            uint8_t *Payload = NULL;
-            uint32_t PayloadLen=0;
-            uint32_t DealLen=0;
-            Payload=MQTT_DecodeMsg(&head,m.PayloadBuffSize,&PayloadLen,(uint8_t *)m.RxBuff,RxLen,&DealLen);
+            size_t TotalDealLen=0;
+            while(TotalDealLen<(size_t)RxLen)
             {
-                //默认一次就接收一个数据包，其余情况暂时忽略。若数据包很大则考虑调整socket的接收超时
-                if(Payload!=(uint8_t *)INVALID_HANDLE_VALUE)
+                MQTT_HeadStruct head= {0};
+                head.Data=(uint8_t *)m.PayloadBuff;
+                uint8_t *Payload = NULL;
+                uint32_t PayloadLen=0;
+                uint32_t DealLen=0;
+                Payload=MQTT_DecodeMsg(&head,m.PayloadBuffSize,&PayloadLen,(uint8_t *)(m.RxBuff+TotalDealLen),(RxLen-TotalDealLen),&DealLen);
+                TotalDealLen+=DealLen;
                 {
-                    //m.connectstate.mqttpackedid=head.PackID;
-                    switch(head.Cmd)
+                    //默认一次就接收一个数据包，其余情况暂时忽略。若数据包很大则考虑调整socket的接收超时
+                    if(Payload!=(uint8_t *)INVALID_HANDLE_VALUE)
                     {
-                    case MQTT_CMD_PUBLISH:
-                    {
+                        //m.connectstate.mqttpackedid=head.PackID;
+                        switch(head.Cmd)
                         {
-                            //需要足够大的栈空间执行回调函数
-                            if(m.callback.on_data!=NULL && head.DataLen>0)
+                        case MQTT_CMD_PUBLISH:
+                        {
                             {
-                                char topic[head.DataLen+1]= {0};
-                                memcpy(topic,head.Data,head.DataLen);
-                                int qos=0;
-                                int retain=0;
-                                if(head.Flag&MQTT_MSG_QOS1)
+                                //需要足够大的栈空间执行回调函数
+                                if(m.callback.on_data!=NULL && head.DataLen>0)
                                 {
-                                    qos=1;
-                                }
-                                if(head.Flag&MQTT_MSG_QOS2)
-                                {
-                                    qos=2;
-                                }
-                                if(head.Flag&MQTT_MSG_RETAIN)
-                                {
-                                    retain=1;
-                                }
+                                    char topic[head.DataLen+1]= {0};
+                                    memcpy(topic,head.Data,head.DataLen);
+                                    int qos=0;
+                                    int retain=0;
+                                    if(head.Flag&MQTT_MSG_QOS1)
+                                    {
+                                        qos=1;
+                                    }
+                                    if(head.Flag&MQTT_MSG_QOS2)
+                                    {
+                                        qos=2;
+                                    }
+                                    if(head.Flag&MQTT_MSG_RETAIN)
+                                    {
+                                        retain=1;
+                                    }
 
-                                m.callback.on_data(m,topic,head.DataLen,Payload,PayloadLen,qos,retain);
+                                    m.callback.on_data(m,topic,head.DataLen,Payload,PayloadLen,qos,retain);
+                                }
                             }
-                        }
-                        switch(head.Flag&MQTT_MSG_QOS_MASK)
-                        {
-                        case MQTT_MSG_QOS1:
-                        {
-                            Buffer_Struct TxBuff= {(uint8_t *)m.TxBuff,0,m.TxBuffSize};
-                            int TxLen=MQTT_PublishCtrlMsg(&TxBuff,MQTT_CMD_PUBACK,head.PackID);
-                            if(TxLen>0)
+                            switch(head.Flag&MQTT_MSG_QOS_MASK)
                             {
-                                send(socketfd,m.TxBuff,TxLen,0);
-                                Is_Send=true;
+                            case MQTT_MSG_QOS1:
+                            {
+                                Buffer_Struct TxBuff= {(uint8_t *)m.TxBuff,0,m.TxBuffSize};
+                                int TxLen=MQTT_PublishCtrlMsg(&TxBuff,MQTT_CMD_PUBACK,head.PackID);
+                                if(TxLen>0)
+                                {
+                                    send(socketfd,m.TxBuff,TxLen,0);
+                                    Is_Send=true;
+                                }
                             }
+                            break;
+                            case MQTT_MSG_QOS2:
+                            {
+                                Buffer_Struct TxBuff= {(uint8_t *)m.TxBuff,0,m.TxBuffSize};
+                                int TxLen=MQTT_PublishCtrlMsg(&TxBuff,MQTT_CMD_PUBREL,head.PackID);
+                                if(TxLen>0)
+                                {
+                                    send(socketfd,m.TxBuff,TxLen,0);
+                                    Is_Send=true;
+                                }
+                            }
+                            break;
+                            default:
+                                break;
+                            }
+
                         }
                         break;
-                        case MQTT_MSG_QOS2:
+                        case MQTT_CMD_PUBREC:
                         {
                             Buffer_Struct TxBuff= {(uint8_t *)m.TxBuff,0,m.TxBuffSize};
                             int TxLen=MQTT_PublishCtrlMsg(&TxBuff,MQTT_CMD_PUBREL,head.PackID);
@@ -755,63 +776,51 @@ bool MQTT::appsocket_onloop(const struct __appsocket_cfg_t *cfg,int socketfd)//�
                                 send(socketfd,m.TxBuff,TxLen,0);
                                 Is_Send=true;
                             }
+
                         }
                         break;
+                        case MQTT_CMD_PUBREL:
+                        {
+                            Buffer_Struct TxBuff= {(uint8_t *)m.TxBuff,0,m.TxBuffSize};
+                            int TxLen=MQTT_PublishCtrlMsg(&TxBuff,MQTT_CMD_PUBCOMP,head.PackID);
+                            if(TxLen>0)
+                            {
+                                send(socketfd,m.TxBuff,TxLen,0);
+                                Is_Send=true;
+                            }
+                        }
+                        break;
+                        case MQTT_CMD_PINGRESP:
+                        {
+                            m.keepalivestate.last_tick=iot_os_get_system_tick();
+                            m.keepalivestate.is_send_req=false;
+                            m.keepalivestate.is_send_req_2=false;
+                            app_debug_print("%s:receive pingresp!!!tick=%u\n\r",TAG,m.keepalivestate.last_tick);
+                        }
+                        break;
+
+                        case MQTT_CMD_SUBACK:
+                        {
+                            app_debug_print("%s:subscribe ack !!! packageid=%u\n\r",TAG,head.PackID);
+                        }
+                        break;
+
+                        case MQTT_CMD_UNSUBACK:
+                        {
+                            app_debug_print("%s:unsubscribe ack !!! packageid=%u\n\r",TAG,head.PackID);
+                        }
+                        break;
+
                         default:
                             break;
                         }
-
                     }
-                    break;
-                    case MQTT_CMD_PUBREC:
+                    else
                     {
-                        Buffer_Struct TxBuff= {(uint8_t *)m.TxBuff,0,m.TxBuffSize};
-                        int TxLen=MQTT_PublishCtrlMsg(&TxBuff,MQTT_CMD_PUBREL,head.PackID);
-                        if(TxLen>0)
-                        {
-                            send(socketfd,m.TxBuff,TxLen,0);
-                            Is_Send=true;
-                        }
-
-                    }
-                    break;
-                    case MQTT_CMD_PUBREL:
-                    {
-                        Buffer_Struct TxBuff= {(uint8_t *)m.TxBuff,0,m.TxBuffSize};
-                        int TxLen=MQTT_PublishCtrlMsg(&TxBuff,MQTT_CMD_PUBCOMP,head.PackID);
-                        if(TxLen>0)
-                        {
-                            send(socketfd,m.TxBuff,TxLen,0);
-                            Is_Send=true;
-                        }
-                    }
-                    break;
-                    case MQTT_CMD_PINGRESP:
-                    {
-                        m.keepalivestate.last_tick=iot_os_get_system_tick();
-                        m.keepalivestate.is_send_req=false;
-                        m.keepalivestate.is_send_req_2=false;
-                        app_debug_print("%s:receive pingresp!!!tick=%u\n\r",TAG,m.keepalivestate.last_tick);
-                    }
-                    break;
-
-                    case MQTT_CMD_SUBACK:
-                    {
-                        app_debug_print("%s:subscribe ack !!! packageid=%u\n\r",TAG,head.PackID);
-                    }
-                    break;
-
-                    case MQTT_CMD_UNSUBACK:
-                    {
-                        app_debug_print("%s:unsubscribe ack !!! packageid=%u\n\r",TAG,head.PackID);
-                    }
-                    break;
-
-                    default:
                         break;
                     }
-                }
 
+                }
             }
         }
 
