@@ -22,7 +22,12 @@ MQTT *ptr=NULL;
 //连接
 static void mqtt_on_connect(class MQTT &client)
 {
+    client.subscribe((char *)"air724ug/json/cmd/subtest",0);
     client.subscribe((char *)"air724ug/json/cmd",0);
+    client.subscribe((char *)"air724ug/json/cmd1",1);
+    client.subscribe((char *)"air724ug/json/cmd2",2);
+    client.unsubscribe((char *)"air724ug/json/cmd/subtest",0);
+
 }
 //丢失连接
 static  void mqtt_on_disconnect(class MQTT &client)

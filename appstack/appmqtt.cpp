@@ -505,6 +505,30 @@ bool MQTT::subscribe(char *topic,uint8_t qos)
     return sub.is_vailed();
 }
 
+bool MQTT::unsubscribe(char *topic,uint8_t qos)
+{
+    if(!get_is_connected())
+    {
+        return false;
+    }
+    MQTTUnsubscribeInfo unsub;
+    unsub.set_subscribe(topic,qos);
+
+    if(unsub.is_vailed())
+    {
+
+        unsubscribeinfo.lock.take();
+
+        unsubscribeinfo.Queue.push(unsub);
+
+        unsubscribeinfo.lock.release();
+
+        app_debug_print("%s:add unsubscribe to queue!!!\n\r",TAG);
+    }
+
+    return unsub.is_vailed();
+}
+
 bool MQTT::publish(char *_topic,void *_payload,size_t _payload_length,uint8_t _qos,int _retain)
 {
     if(!get_is_connected())
@@ -542,6 +566,7 @@ void MQTT::appsocket_before_connect(const struct __appsocket_cfg_t * cfg,int soc
     m.connectstate.isconnected=false;
     m.connectstate.ispendingdisconnect=false;
     m.connectstate.socketfd=socket_fd;
+    m.connectstate.mqttpackedid=0;
     if(strcmp((char *)default_mqtt::clientid,(char *)m.connectinfo.clientid)==0)
     {
         m.connectinfo.set_clientid(NULL,true);//使用cliendid
@@ -679,7 +704,7 @@ bool MQTT::appsocket_onloop(const struct __appsocket_cfg_t *cfg,int socketfd)//�
                 //默认一次就接收一个数据包，其余情况暂时忽略。若数据包很大则考虑调整socket的接收超时
                 if(Payload!=(uint8_t *)INVALID_HANDLE_VALUE)
                 {
-                    m.connectstate.mqttpackedid=head.PackID;
+                    //m.connectstate.mqttpackedid=head.PackID;
                     switch(head.Cmd)
                     {
                     case MQTT_CMD_PUBLISH:
@@ -776,6 +801,12 @@ bool MQTT::appsocket_onloop(const struct __appsocket_cfg_t *cfg,int socketfd)//�
                     }
                     break;
 
+                    case MQTT_CMD_UNSUBACK:
+                    {
+                        app_debug_print("%s:unsubscribe ack !!! packageid=%u\n\r",TAG,head.PackID);
+                    }
+                    break;
+
                     default:
                         break;
                     }
@@ -863,6 +894,51 @@ bool MQTT::appsocket_onloop(const struct __appsocket_cfg_t *cfg,int socketfd)//�
                         if(TxLen>0)
                         {
                             app_debug_print("%s:send subscribe !!! %d bytes,packageid=%u\n\r",TAG,TxLen,m.connectstate.mqttpackedid);
+                            send(socketfd,m.TxBuff,TxLen,0);
+                            Is_Send=true;
+                        }
+                    }
+                }
+            }
+
+
+        }
+
+    }
+
+    {
+        //检查取消订阅
+        if(!Is_Send)
+        {
+
+            if(m.unsubscribeinfo.Queue.size()>0)
+            {
+                MQTTUnsubscribeInfo info;
+                m.unsubscribeinfo.lock.take();
+
+
+                {
+                    info=m.unsubscribeinfo.Queue.front();
+                    m.unsubscribeinfo.Queue.pop();
+                }
+
+                m.unsubscribeinfo.lock.release();
+
+                app_debug_print("%s:read unsubscribe from queue!!!\n\r",TAG);
+
+                if(info.is_vailed())
+                {
+                    MQTT_SubscribeStruct sub[1];
+                    sub[0].Char=info.topic;
+                    sub[0].Qos=info.qos;
+                    {
+                        m.connectstate.mqttpackedid++;
+                        Buffer_Struct TxBuff= {(uint8_t *)m.TxBuff,0,m.TxBuffSize};
+                        Buffer_Struct PayloadBuff= {(uint8_t *)m.PayloadBuff,0,m.PayloadBuffSize};
+                        int TxLen=MQTT_UnSubscribeMsg(&TxBuff,&PayloadBuff,m.connectstate.mqttpackedid,sub,1);
+                        if(TxLen>0)
+                        {
+                            app_debug_print("%s:send unsubscribe !!! %d bytes,packageid=%u\n\r",TAG,TxLen,m.connectstate.mqttpackedid);
                             send(socketfd,m.TxBuff,TxLen,0);
                             Is_Send=true;
                         }

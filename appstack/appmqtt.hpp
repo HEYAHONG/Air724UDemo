@@ -135,6 +135,13 @@ class MQTT
         std::queue<MQTTSubscibeInfo> Queue;
     } subscribeinfo;
 
+    using MQTTUnsubscribeInfo=MQTTSubscibeInfo;
+    struct
+    {
+        AppLock lock;
+        std::queue<MQTTUnsubscribeInfo> Queue;
+    } unsubscribeinfo;
+
     MQTTCallback callback;
 
     struct
@@ -155,6 +162,8 @@ public:
     bool get_is_connected();
 
     bool subscribe(char *topic,uint8_t qos=0);
+
+    bool unsubscribe(char *topic,uint8_t qos=0);
 
     bool publish(char *_topic,void *_payload,size_t _payload_length,uint8_t _qos=0,int _retain=0);
 
