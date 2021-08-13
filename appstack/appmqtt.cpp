@@ -436,13 +436,22 @@ bool MQTT::connect(const char *ip,uint16_t port)
         return false;
     }
 
+    return connect(appsocket_get_addr_by_ip(ip,port));
+
+}
+
+
+
+bool MQTT::connect(const struct openat_sockaddr_in addr)
+{
+
     app_debug_print("%s:start connecting !!!\n\r",TAG);
 
     disconnect();
 
     appsocket_cfg_t cfg= {0};
 
-    cfg.server_addr=appsocket_get_addr_by_ip(ip,port);
+    cfg.server_addr=addr;
 
     cfg.userptr=this;//传递this指针
 

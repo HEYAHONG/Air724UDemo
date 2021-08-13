@@ -50,6 +50,9 @@ typedef struct __appsocket_cfg_t
 //通过点分十进制IP地址获得地址struct openat_sockaddr_in
 struct openat_sockaddr_in appsocket_get_addr_by_ip(const char * ip,uint16_t port);
 
+//通过地址获得地址struct openat_sockaddr_in,必须判断is_success,需要联网后使用,有可能由内存泄露（不可多次调用）
+    struct openat_sockaddr_in appsocket_get_addr_by_host(const char * host,uint16_t port,bool *is_success);
+
 
 //添加appsocket,失败返回负数,成功后返回appsocket_id(可用于删除)
 int appsocket_add(appsocket_cfg_t cfg);

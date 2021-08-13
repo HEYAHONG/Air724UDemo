@@ -155,7 +155,9 @@ public:
     ~MQTT();
     MQTT(const MQTT &other)=delete;//禁止复制
 
-    bool connect(const char *ip,uint16_t port);
+    bool connect(const char *ip,uint16_t port=1883);
+
+    bool connect(const struct openat_sockaddr_in addr);
 
     void disconnect();
 

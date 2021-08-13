@@ -331,3 +331,26 @@ struct openat_sockaddr_in appsocket_get_addr_by_ip(const char * ip,uint16_t port
     inet_aton(ip,&addr.sin_addr);
     return addr;
 };
+
+//通过地址获得地址struct openat_sockaddr_in,必须判断is_success,需要联网后使用
+struct openat_sockaddr_in appsocket_get_addr_by_host(const char * host,uint16_t port,bool *is_success)
+{
+    bool isok=false;
+    openat_sockaddr_in addr={0};
+    if(NETWORK_STATE_CONNECTED==network_get_state())
+    {
+       struct hostent *hostentptr=gethostbyname(host);
+       if(hostentptr!=NULL)
+       {
+           addr=appsocket_get_addr_by_ip(ipaddr_ntoa((const openat_ip_addr_t *)hostentptr->h_addr_list[0]),port);
+           isok=true;
+       }
+    }
+
+    if(is_success!=NULL)
+    {
+        *is_success=isok;
+    }
+
+    return addr;
+};
