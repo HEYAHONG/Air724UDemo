@@ -635,6 +635,11 @@ void MQTT::appsocket_after_connect(const struct __appsocket_cfg_t *cfg,int socke
         int timeout=5;
         setsockopt(socketfd,SOL_SOCKET,SO_RCVTIMEO,&timeout,sizeof(timeout));
     }
+    {
+        //启用TCP NODelay
+        int nodelay=1;
+        setsockopt(socketfd,0x06,OPENAT_TCP_NODELAY,&nodelay,sizeof(nodelay));
+    }
 
     {
         //处理接收的消息
