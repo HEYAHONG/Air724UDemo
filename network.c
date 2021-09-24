@@ -6,7 +6,7 @@
 #include "stdlib.h"
 #include "stdio.h"
 #include "debug.h"
-#include "config.h"
+#include "kconfig.h"
 #include "stdbool.h"
 
 

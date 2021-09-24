@@ -14,7 +14,7 @@ extern "C"
     由于CSDK头文件未完全避免使用c++关键字作为变量标识符，因此不能直接包含CSDK头文件
     */
 
-#include "config.h"
+#include "kconfig.h"
 
 #include "stdint.h"
 #include "stdlib.h"

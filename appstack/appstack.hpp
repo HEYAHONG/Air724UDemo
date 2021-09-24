@@ -7,6 +7,7 @@ extern "C"
 #endif // __cplusplus
 #include "stdlib.h"
 #include "stdint.h"
+#include "kconfig.h"
 
 void app_init();
 

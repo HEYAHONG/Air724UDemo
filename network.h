@@ -7,6 +7,7 @@ extern "C"
 #endif // __cplusplus
 #include "stdbool.h"
 #include "stdint.h"
+#include "kconfig.h"
 
 typedef enum
 {

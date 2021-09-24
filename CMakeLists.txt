@@ -33,6 +33,7 @@ add_custom_target(menuconfig ${PYTHON} -m menuconfig
                   USES_TERMINAL
                   )
 
+add_definitions(" -DUSE_KCONFIG=1 ")
 
 if(CONFIG_APPIMG_LOAD_FLASH)
 add_appimg(${target} ${flash_ldscript} main.c debug.c network.c cpp.cpp appstack/appstack.cpp appstack/appsocket.cpp appstack/appmqtt.cpp config.h)

@@ -1,4 +1,4 @@
-﻿#include "config.h"
+#include "kconfig.h"
 #include "debug.h"
 #include "iot_debug.h"
 #include "iot_os.h"

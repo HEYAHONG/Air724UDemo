@@ -1,7 +1,7 @@
 ﻿#include "iot_debug.h"
 #include "iot_os.h"
 #include "stdbool.h"
-#include "config.h"
+#include "kconfig.h"
 #include "debug.h"
 #include "iot_flash.h"
 #include "stdlib.h"
