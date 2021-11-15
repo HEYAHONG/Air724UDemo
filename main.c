@@ -42,6 +42,8 @@ static void main_task(PVOID pParameter)
 
         iot_os_mem_used(&totalmemory,&freememory);
 
+        freememory=(totalmemory-freememory);
+
         //打印剩余内存
         app_debug_print("%s:Total Memory:%uBytes,Free Memory:%uBytes\n\r",TAG,totalmemory,freememory);
     }
