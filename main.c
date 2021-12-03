@@ -93,7 +93,7 @@ int appimg_enter(void *param)
 #endif // CONFIG_NETWORK_START_ON_BOOT
 
 
-    main_task_handle = iot_os_create_task(main_task, NULL, 4096, 1, OPENAT_OS_CREATE_DEFAULT, "main");
+    main_task_handle = iot_os_create_task(main_task, NULL, 4096, 5, OPENAT_OS_CREATE_DEFAULT, "main");
     return 0;
 }
 

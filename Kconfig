@@ -28,8 +28,4 @@ source "appstack/appstack.Kconfig"
 
 endmenu
 
-menu "AppMQTT"
 
-source "appstack/appmqtt.Kconfig"
-
-endmenu
