@@ -19,6 +19,13 @@ int ThreadStart(Thread* thread, void (*fn)(void*), void* arg)
 
 void MutexInit(Mutex* mutex)
 {
+    if(mutex->sem!=NULL)
+    {
+        /*
+        尝试删除sem。仅针对appstack中Client的写法。
+        */
+        iot_os_delete_semaphore(mutex->sem);
+    }
 	mutex->sem =iot_os_create_semaphore(1);
 }
 
