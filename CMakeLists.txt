@@ -43,12 +43,12 @@ endif()
 
 #添加库需要在add_appimg后
 
-#添加PAHO MQTT库
-add_subdirectory(lib/MQTT)
-target_link_libraries(${target} PRIVATE PAHO_MQTT)
+#添加SMGS库
+add_subdirectory(lib/SimpleMQTTGateWayStack/lib)
+target_link_libraries(${target} PUBLIC SMGS)
 
 #添加源代码
 file(GLOB  C_CPP_FILES *.c *.cpp appstack/*.c appstack/*.cpp lib/MQTT/*.c)
 target_sources(${target} PUBLIC ${C_CPP_FILES})
 add_definitions(" -DMQTTCLIENT_PLATFORM_HEADER=MQTTAir724UG.h -DMQTT_TASK ")
-INCLUDE_DIRECTORIES(. appstack)
+INCLUDE_DIRECTORIES(. appstack lib/MQTT/)

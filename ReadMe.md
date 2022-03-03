@@ -4,6 +4,18 @@
 由于官方此时(20210804)的支持尚不完善，此Demo中的某些分支并不是使用官方源代码,而是进行了某些修改,地址为[https://github.com/HEYAHONG/Luat_CSDK_Air724U.git](https://github.com/HEYAHONG/Luat_CSDK_Air724U.git)。
 若使用的demo的分支名称在官方源代码中不存在，请使用修改后的SDK代码。
 
+## 源代码下载
+
+由于本源代码包含第三方源代码,故直接下载可能有部分源代码缺失，需要通过以下方法解决:
+
+- 在进行git clone 使用--recurse-submodules参数。
+
+- 若已通过git clone下载,则在源代码目录中执行以下命令下载子模块:
+
+  ```bash
+   git submodule update --init --recursive
+  ```
+
 # 编译环境
 
 - 操作系统: Windows  (sdk虽有部分linux系统支持代码，但支持不全，此时无法使用（20210804))

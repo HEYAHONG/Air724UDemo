@@ -1,0 +1,3 @@
+[submodule "lib/SimpleMQTTGateWayStack"]
+	path = lib/SimpleMQTTGateWayStack
+	url = https://github.com/HEYAHONG/SimpleMQTTGateWayStack.git
