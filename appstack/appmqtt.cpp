@@ -69,7 +69,7 @@ static void mqtt_receive_task(void *arg)
 
 
         NetworkInit(&mqttserver);
-        while(0!=NetworkConnect(&mqttserver,(char *)"didiyun.hyhsystem.cn",1883))
+        while(0!=NetworkConnect(&mqttserver,(char *)"mqtt.hyhsystem.cn",1883))
         {
             app_debug_print("%s:connect mqtt server!\r\n",TAG);
             iot_os_sleep(3000);
