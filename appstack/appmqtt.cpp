@@ -21,8 +21,8 @@ extern "C"
 extern "C"
 {
 #include "MQTTClient.h"
-extern void * cpp_malloc(size_t nsize);
-extern void cpp_free(void *p);
+    extern void * cpp_malloc(size_t nsize);
+    extern void cpp_free(void *p);
 #include "debug.h"
 #include "string.h"
 }
@@ -85,12 +85,14 @@ static void mqtt_receive_task(void *arg)
 
         if(SUCCESS!=MQTTConnect(&mqttclient,&cfg))
         {
+            mqttserver.disconnect(&mqttserver);
             app_debug_print("%s:mqtt connect failed!!\r\n",TAG);
             continue;
         }
 
         if(SUCCESS!=MQTTSubscribe(&mqttclient,"+/#",QOS0,mqttmessageHandler))
         {
+            mqttserver.disconnect(&mqttserver);
             app_debug_print("%s:mqtt subscribe failed!!\r\n",TAG);
             continue;
         }
@@ -141,9 +143,9 @@ static void mqtt_ping_task(void *arg)
         {
             last_ping_tick=iot_os_get_system_tick();
             bool is_ok=mqtt_ping(&mqttclient);
-           app_debug_print("%s:ping %s\r\n",TAG,is_ok?"success":"failed");
+            app_debug_print("%s:ping %s\r\n",TAG,is_ok?"success":"failed");
         }
-       iot_os_sleep(1000);
+        iot_os_sleep(1000);
     }
 
 }

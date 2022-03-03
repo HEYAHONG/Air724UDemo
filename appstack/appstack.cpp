@@ -1,10 +1,11 @@
-﻿#include "kconfig.h"
+﻿
+#include "kconfig.h"
 #include "appstack.hpp"
-#include "appsocket.hpp"
 #include "appmqtt.hpp"
 #include "debug.h"
 #include "stdlib.h"
 #include "appmqtt.hpp"
+#include "network.h"
 
 static __unused const char * TAG="appstack";
 

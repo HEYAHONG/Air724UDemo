@@ -2,7 +2,8 @@
 #ifndef APPMQTT_HPP_INCLUDED
 #define APPMQTT_HPP_INCLUDED
 
-#include "appsocket.hpp"
+#include "stdint.h"
+#include "stdlib.h"
 
 #ifdef __cplusplus
 extern "C"

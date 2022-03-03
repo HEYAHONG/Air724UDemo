@@ -7,7 +7,6 @@
 #include "stdlib.h"
 #include "stdio.h"
 #include "appstack.hpp"
-#include "appsocket.hpp"
 #include "network.h"
 #include "iot_pmd.h"
 
@@ -84,8 +83,6 @@ int appimg_enter(void *param)
     iot_pmd_exit_deepsleep();
 
     app_debug_init();
-
-    appsocket_init();
 
 
 #if CONFIG_NETWORK_START_ON_BOOT == 1
