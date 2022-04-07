@@ -52,3 +52,13 @@ file(GLOB  C_CPP_FILES *.c *.cpp appstack/*.c appstack/*.cpp lib/MQTT/*.c)
 target_sources(${target} PUBLIC ${C_CPP_FILES})
 add_definitions(" -DMQTTCLIENT_PLATFORM_HEADER=MQTTAir724UG.h -DMQTT_TASK ")
 INCLUDE_DIRECTORIES(. appstack lib/MQTT/)
+
+#添加ril
+target_include_directories(${target} PRIVATE ${CMAKE_SOURCE_DIR}/components/ril/inc)
+add_library(main_ril ${CMAKE_SOURCE_DIR}/components/ril/src/at_process.c ${CMAKE_SOURCE_DIR}/components/ril/src/at_tok.c  ${CMAKE_SOURCE_DIR}/components/ril/src/ril_pal.c )
+target_link_libraries(${target} PRIVATE main_ril)
+target_include_directories(main_ril  PRIVATE ${CMAKE_SOURCE_DIR}/components/include)
+target_include_directories(main_ril  PRIVATE ${CMAKE_SOURCE_DIR}/components/newlib/include)
+target_include_directories(main_ril  PRIVATE ${CMAKE_SOURCE_DIR}/components/openat_inc)
+target_include_directories(main_ril  PRIVATE ${CMAKE_SOURCE_DIR}/api/include)
+target_include_directories(main_ril  PRIVATE ${CMAKE_SOURCE_DIR}/components/ril/inc)
