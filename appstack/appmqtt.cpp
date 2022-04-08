@@ -7,6 +7,7 @@
 #include "stdio.h"
 #include "stdlib.h"
 #include "errno.h"
+#include "libSMGS.h"
 #ifdef __cplusplus
 extern "C"
 {
@@ -37,30 +38,193 @@ struct MQTTClient mqttclient= {0};
 uint8_t mqtttxbuff[1024]= {0};
 uint8_t mqttrxbuff[1024]= {0};
 
-const int keepalive=10;
+const int keepalive=120;
+
+extern SMGS_gateway_context_t gateway_context;
 
 static void mqttmessageHandler(MessageData*msg)
 {
-    char * topic=(char *)iot_os_malloc(msg->topicName->lenstring.len+1);
-    memset(topic,0,msg->topicName->lenstring.len+1);
-    memcpy(topic,msg->topicName->lenstring.data,msg->topicName->lenstring.len);
+    uint8_t buff[4096]= {0};
+    SMGS_GateWay_Receive_MQTT_MSG(&gateway_context,msg->topicName->lenstring.data,msg->topicName->lenstring.len,(uint8_t *)msg->message->payload,msg->message->payloadlen,msg->message->qos,msg->message->retained,buff,sizeof(buff));
+}
 
-    char  *payload =(char *)iot_os_malloc(msg->message->payloadlen+1);
-    memset(payload,0,msg->message->payloadlen+1);
-    memcpy(payload,msg->message->payload,msg->message->payloadlen);
 
-    app_debug_print("%s:topic:%s,data=%s,datalen=%uBytes\r\n",TAG,topic,(char *)payload,msg->message->payloadlen);
-    //MQTTPublish(&mqttclient,"/echo",msg->message);
+/*
+协议栈相关
+*/
+static const char * GateWayName="Air724Demo";
+static char GateWaySerialNumber[32]="A724";
 
-    iot_os_free(topic);
-    iot_os_free(payload);
+SMGS_device_context_t device_context;
+
+bool  SMGS_Device_IsOnline(SMGS_device_context_t *ctx)
+{
+    //默认返回真
+    return true;
+}
+
+bool SMGS_Device_Command(SMGS_device_context_t *ctx,SMGS_topic_string_ptr_t plies[],SMGS_payload_cmdid_t *cmdid,uint8_t *cmddata,size_t cmddata_length,uint8_t *retbuff,size_t *retbuff_length,SMGS_payload_retcode_t *ret)
+{
+    bool _ret=false;
+    app_debug_print("%s:Device_Command(CmdID=%04X)\r\n",TAG,(uint32_t)(*cmdid));
+    return _ret;
+}
+
+bool SMGS_Device_ReadRegister(SMGS_device_context_t *ctx,SMGS_topic_string_ptr_t plies[],SMGS_payload_register_address_t addr,uint64_t *dat,SMGS_payload_register_flag_t *flag)
+{
+    bool ret=false;
+    app_debug_print("%s:Device_ReadRegister(Addr=%04X)\r\n",TAG,(uint32_t)addr);
+    return ret;
+}
+
+bool SMGS_Device_WriteRegister(SMGS_device_context_t *ctx,SMGS_topic_string_ptr_t plies[],SMGS_payload_register_address_t addr,uint64_t *dat,SMGS_payload_register_flag_t *flag)
+{
+    bool ret=false;
+    app_debug_print("%s:Device_WriteRegister(Addr=%04X,Data=%016llX,Flag=%02X)\r\n",TAG,(uint32_t)addr,(*dat),(uint32_t)(flag->val));
+    return ret;
+}
+
+bool SMGS_Device_ReadSensor(SMGS_device_context_t *ctx,SMGS_topic_string_ptr_t plies[],SMGS_payload_sensor_address_t addr,uint64_t *dat,SMGS_payload_sensor_flag_t *flag)
+{
+    bool ret=false;
+    app_debug_print("%s:Device_ReadSensor(Addr=%04X,Flag=%02X)\r\n",TAG,(uint32_t)addr,(uint32_t)(flag->val));
+    return ret;
 }
 
 
 
+SMGS_gateway_context_t gateway_context;
 
+bool SMGS_GateWay_Command(SMGS_gateway_context_t *ctx,SMGS_topic_string_ptr_t plies[],SMGS_payload_cmdid_t *cmdid,uint8_t *cmddata,size_t cmddata_length,uint8_t *retbuff,size_t *retbuff_length,SMGS_payload_retcode_t *ret)
+{
+    bool _ret=false;
+    app_debug_print("%s:GateWay_Command(CmdID=%04X)\r\n",TAG,(uint32_t)(*cmdid));
+    return _ret;
+}
+
+bool SMGS_GateWay_ReadRegister(SMGS_gateway_context_t *ctx,SMGS_topic_string_ptr_t plies[],SMGS_payload_register_address_t addr,uint64_t *dat,SMGS_payload_register_flag_t *flag)
+{
+    bool ret=false;
+    app_debug_print("%s:GateWay_ReadRegister(Addr=%04X)\r\n",TAG,(uint32_t)addr);
+    return ret;
+}
+
+bool SMGS_GateWay_WriteRegister(SMGS_gateway_context_t *ctx,SMGS_topic_string_ptr_t plies[],SMGS_payload_register_address_t addr,uint64_t *dat,SMGS_payload_register_flag_t *flag)
+{
+    bool ret=false;
+    app_debug_print("%s:GateWay_WriteRegister(Addr=%04X,Data=%016llX,Flag=%02X)\r\n",TAG,(uint32_t)addr,(*dat),(uint32_t)(flag->val));
+    return ret;
+}
+
+bool SMGS_GateWay_ReadSensor(SMGS_gateway_context_t *ctx,SMGS_topic_string_ptr_t plies[],SMGS_payload_sensor_address_t addr,uint64_t *dat,SMGS_payload_sensor_flag_t *flag)
+{
+    bool ret=false;
+    app_debug_print("%s:GateWay_ReadSensor(Addr=%04X,Flag=%02X)\r\n",TAG,(uint32_t)addr,(uint32_t)(flag->val));
+    return ret;
+}
+
+
+//设备查询函数
+SMGS_device_context_t * SMGS_Device_Next(struct __SMGS_gateway_context_t *ctx,SMGS_device_context_t * devctx)
+{
+    if(devctx==NULL)
+    {
+        return &device_context;//返回第一个设备
+    }
+
+    //由于只有一个设备，直接返回NULL
+
+    return NULL;
+}
+
+
+static bool SMGS_MessagePublish(struct __SMGS_gateway_context_t *ctx,const char * topic,void * payload,size_t payloadlen,uint8_t qos,int retain)
+{
+    if(MQTTIsConnected(&mqttclient)==0)
+    {
+        return false;
+    }
+
+    QoS Qos=QOS0;
+    switch(qos)
+    {
+    default:
+        break;
+    case 0:
+        Qos=QOS0;
+        break;
+    case 1:
+        Qos=QOS1;
+        break;
+    case 2:
+        Qos=QOS2;
+        break;
+
+    }
+
+    MQTTMessage msg;
+    memset(&msg,0,sizeof(msg));
+    msg.payload=payload;
+    msg.payloadlen=payloadlen;
+    msg.qos=Qos;
+    msg.retained=retain;
+    return MQTTPublish(&mqttclient,topic,&msg)==0;
+}
+
+extern  "C" const char * get_imei();
+static char subscribestr[64];
 static void mqtt_receive_task(void *arg)
 {
+
+
+    {
+        //处理序列号
+        const char * IMEI=get_imei();
+
+        while(IMEI==NULL)
+        {
+            IMEI=get_imei();
+            iot_os_sleep(1000);
+        }
+
+        size_t IMEI_length=strlen(IMEI);
+        {
+            strcat(GateWaySerialNumber,&IMEI[IMEI_length-12]);
+        }
+    }
+
+
+    {
+        //初始化设备上下文
+        SMGS_Device_Context_Init(&device_context);
+
+        //填写设备上下文
+        device_context.DeviceName=GateWayName;
+        device_context.DevicePosNumber=1;
+        device_context.DeviceSerialNumber=GateWaySerialNumber;//默认序列号同网关
+        device_context.IsOnline=SMGS_Device_IsOnline;
+        device_context.Command=SMGS_Device_Command;
+        device_context.ReadRegister=SMGS_Device_ReadRegister;
+        device_context.WriteRegister=SMGS_Device_WriteRegister;
+        device_context.ReadSensor=SMGS_Device_ReadSensor;
+
+    }
+
+    {
+
+        //初始化网关上下文
+        SMGS_GateWay_Context_Init(&gateway_context,GateWaySerialNumber,SMGS_MessagePublish);
+
+        //填写网关上下文
+        gateway_context.GateWayName=GateWayName;
+        gateway_context.Command=SMGS_GateWay_Command;
+        gateway_context.ReadRegister=SMGS_GateWay_ReadRegister;
+        gateway_context.WriteRegister=SMGS_GateWay_WriteRegister;
+        gateway_context.ReadSensor=SMGS_GateWay_ReadSensor;
+        gateway_context.Device_Next=SMGS_Device_Next;
+    }
+
+
     app_debug_print("%s:mqtt task start!!\r\n",TAG);
     while(true)
     {
@@ -78,24 +242,67 @@ static void mqtt_receive_task(void *arg)
         MQTTClientInit(&mqttclient,&mqttserver,3000,mqtttxbuff,sizeof(mqtttxbuff),mqttrxbuff,sizeof(mqttrxbuff));
 
 
-        MQTTPacket_connectData cfg=MQTTPacket_connectData_initializer;
-
-        //使用keepalive选项
-        cfg.keepAliveInterval=keepalive;
-
-        if(SUCCESS!=MQTTConnect(&mqttclient,&cfg))
         {
-            mqttserver.disconnect(&mqttserver);
-            app_debug_print("%s:mqtt connect failed!!\r\n",TAG);
-            continue;
+
+            MQTTPacket_connectData cfg=MQTTPacket_connectData_initializer;
+
+            //使用keepalive选项
+            cfg.keepAliveInterval=keepalive;
+
+            //填写clientID
+            cfg.clientID.cstring=(char *)GateWaySerialNumber;
+
+            //填写cleansession
+            cfg.cleansession=1;
+
+            //填写用户名与密码
+            cfg.username.cstring=(char *)GateWaySerialNumber;
+            cfg.password.cstring=(char *)GateWaySerialNumber;
+
+            //填写will
+            uint8_t willbuff[256]= {0};
+            SMGS_gateway_will_t will= {0};
+            SMGS_GateWay_Will_Encode(&gateway_context,&will,willbuff,sizeof(willbuff));
+
+            cfg.will.topicName.cstring=(char *)will.topic;
+            cfg.will.qos=will.qos;
+            cfg.will.message.lenstring.data=(char *)will.payload;
+            cfg.will.message.lenstring.len=will.payloadlen;
+            cfg.will.retained=will.ratain;
+            cfg.willFlag=1;
+
+
+            if(SUCCESS!=MQTTConnect(&mqttclient,&cfg))
+            {
+                mqttserver.disconnect(&mqttserver);
+                app_debug_print("%s:mqtt connect failed!!\r\n",TAG);
+                continue;
+            }
+        }
+        {
+
+
+            memset(subscribestr,0,sizeof(subscribestr));
+            strcat(subscribestr,GateWaySerialNumber);
+            strcat(subscribestr,"/#");
+
+            if(SUCCESS!=MQTTSubscribe(&mqttclient,subscribestr,QOS0,mqttmessageHandler))
+            {
+                mqttserver.disconnect(&mqttserver);
+                app_debug_print("%s:mqtt subscribe failed!!\r\n",TAG);
+                continue;
+            }
         }
 
-        if(SUCCESS!=MQTTSubscribe(&mqttclient,"+/#",QOS0,mqttmessageHandler))
         {
-            mqttserver.disconnect(&mqttserver);
-            app_debug_print("%s:mqtt subscribe failed!!\r\n",TAG);
-            continue;
+            //发送网关上线消息
+            uint8_t buff[512]= {0};
+            SMGS_GateWay_Online(&gateway_context,buff,sizeof(buff),0,0);
         }
+
+         app_debug_print("%s:SimpleMQTTGateWayStack Online\r\n",TAG);
+
+
         {
             while(true)
             {
@@ -155,7 +362,7 @@ void MQTT_Init()
 
     uint8_t pri=app_get_auto_task_priority();
 
-    iot_os_create_task(mqtt_receive_task, NULL, 4096, pri, OPENAT_OS_CREATE_DEFAULT,(char *) "MQTT Receive");
-    iot_os_create_task(mqtt_ping_task, NULL, 4096, pri, OPENAT_OS_CREATE_DEFAULT,(char *) "MQTT Ping");
+    iot_os_create_task(mqtt_receive_task, NULL, 6144, pri, OPENAT_OS_CREATE_DEFAULT,(char *) "MQTT Receive");
+    iot_os_create_task(mqtt_ping_task, NULL, 2048, pri, OPENAT_OS_CREATE_DEFAULT,(char *) "MQTT Ping");
 
 }
