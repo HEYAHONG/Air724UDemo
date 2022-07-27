@@ -22,7 +22,19 @@
 ## 脚本说明
 
 - build.bat:构建工程文件(condeblocks工程文件在build目录中)并编译。
+- buildenv.bat：构建工程文件并打开一个cmd.exe窗口（编译环境，此环境中可使用sdk中的工具）。
 - menuconfig.bat:配置Kconfig。
+
+## Code::Blocks工程文件使用说明
+
+运行buildenv.bat后，工程文件在build目录下,后缀名为cbp。若出现失败提示可能没有此文件,此时源代码可能有误。
+
+若直接使用codeblocks打开时,只能编辑源代码，而不能执行编译命令测试源代码（有些命令未使用绝对路径，需要在编译环境中执行）。若要正常使用编译命令,请安以下步骤操作:
+
+- 安装好Code::Blocks。注意:需要能够正常编译的Code::Blocks，即需要带Mingw工具链,如不确定，可建一个helloworld工程测试，如能成功编译则正常。
+- 执行buildenv.bat。执行完成后,会有一个cmd.exe的窗口。
+- 将Code::Blocks的快捷方式或者coldblocks.exe本身拖入cmd.exe的窗口,按回车执行。
+- 打开Code::Blocks后,可关闭cmd.exe窗口,此时使用Code::Blocks打开build目录下的cbp文件即可正常编译源代码。
 
 # 软件说明
 
