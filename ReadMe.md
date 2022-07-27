@@ -33,7 +33,7 @@
 
 - 安装好Code::Blocks。注意:需要能够正常编译的Code::Blocks，即需要带Mingw工具链,如不确定，可建一个helloworld工程测试，如能成功编译则正常。
 - 执行buildenv.bat。执行完成后,会有一个cmd.exe的窗口。
-- 将Code::Blocks的快捷方式或者coldblocks.exe本身拖入cmd.exe的窗口,按回车执行。
+- 将Code::Blocks的快捷方式或者codeblocks.exe本身拖入cmd.exe的窗口,按回车执行。
 - 打开Code::Blocks后,可关闭cmd.exe窗口,此时使用Code::Blocks打开build目录下的cbp文件即可正常编译源代码。
 
 # 软件说明
