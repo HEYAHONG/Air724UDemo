@@ -4,7 +4,7 @@
 set PROJECT_PATH=%~dp0
 
 @rem CSDK安装目录(默认需提前下载至%userprofile%\OpenLuat),目录必须可写
-set CSDK_INSTALL_PATH=%userprofile%\OpenLuat\Luat_CSDK_Air724U
+:: set CSDK_INSTALL_PATH=%userprofile%\OpenLuat\Luat_CSDK_Air724U
 
 @rem  版本号
 set CSDK_VER=1.0.0
@@ -21,7 +21,7 @@ set FOTA_TYPE=%2
 set AM_MODEL=iot_SDK_720U_BT_TTS_VOLTE
 
 @rem 添加CSDK中的工具
-mklink /d /j   "%PROJECT_PATH%\csdk" "%CSDK_INSTALL_PATH%"  1>nul 2>nul
+:: mklink /d /j   "%PROJECT_PATH%\csdk" "%CSDK_INSTALL_PATH%"  1>nul 2>nul
 
 @rem 运行csdk的启动脚本
 call %PROJECT_PATH%\csdk\tools\core_launch.bat  %BUILD_TARGET%

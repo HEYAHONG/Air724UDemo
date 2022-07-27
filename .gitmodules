@@ -1,3 +1,6 @@
 [submodule "lib/SimpleMQTTGateWayStack"]
 	path = lib/SimpleMQTTGateWayStack
 	url = ../../HEYAHONG/SimpleMQTTGateWayStack.git
+[submodule "csdk"]
+	path = csdk
+	url = ../../HEYAHONG/Luat_CSDK_Air724U.git
