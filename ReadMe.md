@@ -14,7 +14,7 @@
    git submodule update --init --recursive
   ```
 
-# 编译环境
+# 编译
 
 - 操作系统: Windows  (sdk虽有部分linux系统支持代码，但支持不全，此时无法使用（20210804))
 - SDK：Luat_CSDK_Air724U 。
@@ -37,6 +37,15 @@
 - 执行buildenv.bat。执行完成后,会有一个cmd.exe的窗口。
 - 将Code::Blocks的快捷方式或者codeblocks.exe本身拖入cmd.exe的窗口,按回车执行。
 - 打开Code::Blocks后,可关闭cmd.exe窗口,此时使用Code::Blocks打开build目录下的cbp文件即可正常编译源代码。
+
+## 固件烧录
+
+正常编译完成后,最终的固件在 build/hex 目录下,后缀名为pac。
+
+此时可直接使用合宙官方的Luatools的固件下载烧录，烧录方式有以下两种:
+
+- 免USB BOOT烧录。使用USB连接PC后直接下载。注意:这需要原有固件正常时才能使用,如有死机或者不断重启时可能不可用。
+- USB BOOT烧录。使用USB连接PC，拉高USB BOOT引脚后（正常运行时需取消拉高操作）进行一次复位,然后直接下载。通常开发过程中需使用这种方式。
 
 # 软件说明
 
