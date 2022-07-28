@@ -8,7 +8,7 @@ config APP_EXIT_MESSAGE
 
 config APP_DEBUG
     bool "debug mode"
-    default y
+    default n
 
 menu "CPP"
 
