@@ -160,13 +160,3 @@ void __throw_bad_function_call()
 
 }
 
-//一般不会用到此函数
-extern "C" void __libc_fini_array()
-{
-    //啥也不做
-}
-//一般不会用到此变量
-extern "C"
-{
-    void * __dso_handle=NULL;
-}
