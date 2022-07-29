@@ -10,7 +10,7 @@ cd   "%PROJECT_PATH%\build"
 
 
 @rem 生成工程（可通过codeblcoks编辑）并编译
-cmake "%PROJECT_PATH%\csdk"  -G "CodeBlocks - Ninja" & ninja 
+cmake %CMAKEDEF% "%PROJECT_PATH%\csdk"  -G "CodeBlocks - Ninja" & ninja 
 
 
 @rem 回到工程目录

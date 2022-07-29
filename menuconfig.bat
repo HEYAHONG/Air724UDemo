@@ -15,7 +15,7 @@ cd   "%PROJECT_PATH%\build"
 
 
 @rem 生成工程（可通过codeblcoks编辑）并启动menuconfig
-cmake "%PROJECT_PATH%\csdk"  -G "CodeBlocks - Ninja" & ninja menuconfig & ninja clean
+cmake %CMAKEDEF% "%PROJECT_PATH%\csdk"  -G "CodeBlocks - Ninja" & ninja menuconfig & ninja clean
 
 
 @rem 回到工程目录
