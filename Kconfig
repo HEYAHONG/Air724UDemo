@@ -10,6 +10,12 @@ config APP_DEBUG
     bool "debug mode"
     default n
 
+menu "CSDK App"
+
+source "csdk.Kconfig"
+
+endmenu
+
 menu "CPP"
 
 source "cpp.Kconfig"

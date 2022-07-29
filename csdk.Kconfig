@@ -1,0 +1,44 @@
+
+config BUILD_APP_MBEDTLS
+    bool "MBEDTLS"
+    default n
+
+config BUILD_APP_FTP
+    bool "FTP"
+    default n
+
+config BUILD_APP_HTTP
+    bool "HTTP"
+    default n
+
+config BUILD_APP_MQTT
+    bool "MQTT"
+    default n
+
+config BUILD_APP_LITTLEVGL
+    bool "LITTLEVGL"
+    default n
+
+config BUILD_APP_OLED_SSD1306
+    bool "OLED_SSD1306"
+    default n
+
+config BUILD_APP_OneWire
+    bool "OneWire"
+    default n
+
+config BUILD_APP_AT_ENGINE
+    bool "AT_ENGINE"
+    default n
+
+config BUILD_APP_SMS
+    bool "SMS"
+    default n
+
+config BUILD_APP_RTMP
+    bool "RTMP"
+    default n
+
+
+
+
