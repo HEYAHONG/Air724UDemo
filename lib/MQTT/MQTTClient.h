@@ -97,7 +97,7 @@ typedef struct MQTTConnackData
 
 typedef struct MQTTSubackData
 {
-    enum QoS grantedQoS;
+    int grantedQoS;
 } MQTTSubackData;
 
 typedef void (*messageHandler)(MessageData*);
@@ -190,7 +190,7 @@ DLLExport int MQTTSubscribe(MQTTClient* client, const char* topicFilter, enum Qo
  *  @param data - suback granted QoS returned
  *  @return success code
  */
-DLLExport int MQTTSubscribeWithResults(MQTTClient* client, const char* topicFilter, enum QoS, messageHandler, MQTTSubackData* data);
+DLLExport int MQTTSubscribeWithResults(MQTTClient* client, const char* topicFilter, int, messageHandler, MQTTSubackData* data);
 
 /** MQTT Subscribe - send an MQTT unsubscribe packet and wait for unsuback before returning.
  *  @param client - the client object to use

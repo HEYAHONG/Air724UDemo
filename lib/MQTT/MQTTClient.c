@@ -514,7 +514,7 @@ int MQTTSetMessageHandler(MQTTClient* c, const char* topicFilter, messageHandler
 }
 
 
-int MQTTSubscribeWithResults(MQTTClient* c, const char* topicFilter, enum QoS qos,
+int MQTTSubscribeWithResults(MQTTClient* c, const char* topicFilter, int qos,
        messageHandler messageHandler, MQTTSubackData* data)
 {
     int rc = FAILURE;
