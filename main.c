@@ -9,6 +9,7 @@
 #include "appstack.hpp"
 #include "network.h"
 #include "iot_pmd.h"
+#include "iot_fs.h"
 #include "at_process.h"
 #include "at_tok.h"
 
@@ -94,6 +95,55 @@ static void main_task(PVOID pParameter)
         app_debug_print("%s:imei:%s\n\r",TAG,get_imei());
     }
 
+    {
+        UINT32 addr=0,length=0;
+
+        iot_flash_getaddr(&addr,&length);
+
+        //打印剩余flash
+        app_debug_print("%s:User Flash Addr:0x%08X,%uBytes\n\r",TAG,addr,length);
+
+#if CONFIG_APP_AUTOMOUNT_FLASH == 1
+        {
+            //将用户空间用于挂载文件系统,使用ios_fs.h中的接口访问
+            T_AMOPENAT_USER_FSMOUNT mount={0};
+            mount.clkDiv=2;
+            mount.exFlash=E_AMOPENAT_FLASH_INTERNAL;
+            mount.offset=addr;
+            mount.size=length;
+            mount.path=CONFIG_APP_AUTOMOUNT_FLASH_PATH;
+
+            bool is_mount_success=false;
+            if(!iot_fs_mount(&mount))
+            {
+                iot_fs_format(&mount);
+                if(iot_fs_mount(&mount))
+                {
+                    is_mount_success=true;
+                }
+            }
+            else
+            {
+                is_mount_success=true;
+            }
+            if(is_mount_success)
+            {
+                app_debug_print("%s:mount internal flash on %s success\n\r",TAG,CONFIG_APP_AUTOMOUNT_FLASH_PATH);
+                T_AMOPENAT_FILE_INFO info={0};
+                if(0<=iot_fs_get_fs_info(CONFIG_APP_AUTOMOUNT_FLASH_PATH,&info))
+                {
+                    app_debug_print("%s: filesystem %s total %llu Bytes used %llu Bytes\n\r",TAG,CONFIG_APP_AUTOMOUNT_FLASH_PATH,info.totalSize,info.usedSize);
+                }
+            }
+            else
+            {
+                app_debug_print("%s:mount internal flash failed\n\r",TAG);
+            }
+        }
+#endif // CONFIG_APP_AUTOMOUNT_FLASH
+
+    }
+
 
     app_init();
 
@@ -107,16 +157,6 @@ static void main_task(PVOID pParameter)
 
         //打印剩余内存
         app_debug_print("%s:Total Memory:%uBytes,Free Memory:%uBytes\n\r",TAG,totalmemory,freememory);
-    }
-
-    {
-        UINT32 addr=0,length=0;
-
-        iot_flash_getaddr(&addr,&length);
-
-        //打印剩余flash
-        app_debug_print("%s:User Flash Addr:0x%08X,%uBytes\n\r",TAG,addr,length);
-
     }
 
 
