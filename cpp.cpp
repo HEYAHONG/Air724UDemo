@@ -53,6 +53,10 @@ void* operator new(size_t nsize)
 //÷ÿ‘ÿoperator delete
 void operator delete(void* pointee)
 {
+    if(pointee==NULL)
+    {
+        return;
+    }
 #if CONFIG_CPP_OP_DELETE_DEBUG == 1
     app_debug_print("%s:operator delete addr=%08X\n\r",TAG,(uint32_t)pointee);
 #endif // CONFIG_CPP_OP_DELETE_DEBUG
