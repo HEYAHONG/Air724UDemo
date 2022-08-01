@@ -76,7 +76,8 @@ static void main_task(PVOID pParameter)
 
     {
         char * banner=(char *)RCGetHandle("banner");
-        app_debug_print("%s:\n%s",TAG,banner);
+        if(banner!=NULL)
+            app_debug_print("%s",TAG,banner);
     }
 
     app_debug_print("%s:%s",TAG,CONFIG_APP_ENTER_MESSAGE"\n\r");
