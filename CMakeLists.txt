@@ -66,3 +66,7 @@ target_include_directories(main_ril  PRIVATE ${CMAKE_SOURCE_DIR}/components/ril/
 #添加RC文件
 add_subdirectory(RC)
 target_link_libraries(${target} PRIVATE RC)
+
+#添加jsoncpp库
+add_subdirectory(lib/jsoncpp/)
+target_link_libraries(${target} PRIVATE jsoncpp)

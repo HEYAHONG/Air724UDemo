@@ -16,7 +16,12 @@ extern "C"
 #include "at_process.h"
 #include "at_tok.h"
 #include "RC.h"
+
 }
+#include "json/value.h"
+#include "json/writer.h"
+#include "json/reader.h"
+#include <string>
 
 HANDLE main_task_handle=NULL;
 
@@ -82,8 +87,6 @@ static void main_task(PVOID pParameter)
 
     app_debug_print("%s:%s",TAG,CONFIG_APP_ENTER_MESSAGE"\n\r");
 
-
-
     {
         uint64_t current_tick=iot_os_get_system_tick();
         app_debug_print("%s:current tick=%u\n\r",TAG,current_tick);
@@ -102,6 +105,22 @@ static void main_task(PVOID pParameter)
             app_debug_print("%s:wait for imei\n\r",TAG);
         }
         app_debug_print("%s:imei:%s\n\r",TAG,get_imei());
+    }
+
+    {
+        const char *app_json=(const char *)RCGetHandle("app.json");
+        if(app_json==NULL)
+        {
+            app_json="{}";
+        }
+        Json::Reader reader;
+        Json::Value json;
+        reader.parse(std::string(app_json),json);
+        json["imei"]=get_imei();
+        Json::StyledWriter writer;
+        std::string payload=writer.write(json);
+        app_debug_print("%s: json config\n%s",TAG,payload.c_str());
+
     }
 
     {

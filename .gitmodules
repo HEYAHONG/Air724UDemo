@@ -4,3 +4,6 @@
 [submodule "csdk"]
 	path = csdk
 	url = ../../HEYAHONG/Luat_CSDK_Air724U.git
+[submodule "lib/jsoncpp/jsoncpp"]
+	path = lib/jsoncpp/jsoncpp
+	url = ../../HEYAHONG/jsoncpp.git
