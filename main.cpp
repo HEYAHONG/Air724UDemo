@@ -15,6 +15,7 @@ extern "C"
 #include "iot_fs.h"
 #include "at_process.h"
 #include "at_tok.h"
+#include "RC.h"
 }
 
 HANDLE main_task_handle=NULL;
@@ -73,6 +74,10 @@ extern "C" const char * get_imei()
 static void main_task(PVOID pParameter)
 {
 
+    {
+        char * banner=(char *)RCGetHandle("banner");
+        app_debug_print("%s:\n%s",TAG,banner);
+    }
 
     app_debug_print("%s:%s",TAG,CONFIG_APP_ENTER_MESSAGE"\n\r");
 

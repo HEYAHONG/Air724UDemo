@@ -2,6 +2,30 @@
 
 本工程是一个使用[Luat_CSDK_Air724U（非官方修改版）](https://github.com/HEYAHONG/Luat_CSDK_Air724U.git)进行开发的Demo程序。
 
+## 资源文件
+
+类似于桌面程序的资源文件。源代码实现的目录为 [rc](rc/)。
+
+在固件编写中，很多时候需要大量的数据，直接手工嵌入到C文件里比较麻烦。
+
+通过读取文件转换到对应C文件可大大节省时间，可添加常用的文本文件（如各种证书）。转换程序源代码为[rc/fsgen.cpp](rc/fsgen.cpp)。
+
+使用步骤如下:
+
+- 将待添加的文件放入 rc/fs目录下。
+
+- 使用文件名调用以下函数(需包含相应头文件RC.h):
+
+  ```c++
+  //通过名称获取资源大小
+  size_t RCGetSize(const char * name);
+  
+  //通过名称获取资源指针
+  const unsigned char * RCGetHandle(const char * name);
+  ```
+
+  
+
 ## 源代码下载
 
 由于本源代码包含第三方源代码,故直接下载可能有部分源代码缺失，需要通过以下方法解决:
@@ -16,7 +40,7 @@
 
 # 编译
 
-- 操作系统: Windows  (sdk虽有部分linux系统支持代码，但支持不全，此时无法使用（20210804))
+- 操作系统: Windows  10
 - SDK：Luat_CSDK_Air724U 。
 
 ## 脚本说明

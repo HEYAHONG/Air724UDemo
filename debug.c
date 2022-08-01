@@ -30,7 +30,7 @@ void app_debug_init()
 //输出调试信息
 void app_debug_print(const char * fmt,...)
 {
-    char *buff=iot_os_malloc(257);
+    char *buff=iot_os_malloc(4096);
     memset(buff,0,257);
     {
         va_list args;

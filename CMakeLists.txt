@@ -62,3 +62,7 @@ target_include_directories(main_ril  PRIVATE ${CMAKE_SOURCE_DIR}/components/newl
 target_include_directories(main_ril  PRIVATE ${CMAKE_SOURCE_DIR}/components/openat_inc)
 target_include_directories(main_ril  PRIVATE ${CMAKE_SOURCE_DIR}/api/include)
 target_include_directories(main_ril  PRIVATE ${CMAKE_SOURCE_DIR}/components/ril/inc)
+
+#添加RC文件
+add_subdirectory(RC)
+target_link_libraries(${target} PRIVATE RC)
