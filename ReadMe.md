@@ -24,7 +24,11 @@
   const unsigned char * RCGetHandle(const char * name);
   ```
 
-  
+
+## 已知问题
+
+- C++静态类的构造函数不可用。
+- C++全局类的构造函数不可用。
 
 ## 源代码下载
 
