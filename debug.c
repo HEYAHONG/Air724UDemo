@@ -31,11 +31,11 @@ void app_debug_init()
 void app_debug_print(const char * fmt,...)
 {
     char *buff=iot_os_malloc(4096);
-    memset(buff,0,257);
+    memset(buff,0,4096);
     {
         va_list args;
         va_start(args, fmt);
-        vsnprintf(buff, 256, fmt, args);
+        vsnprintf(buff, 4095, fmt, args);
     }
 
     iot_os_wait_semaphore(lock,0);
