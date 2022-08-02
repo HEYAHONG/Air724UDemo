@@ -22,9 +22,14 @@ extern "C"
 #include "json/writer.h"
 #include "json/reader.h"
 #include <string>
+#include <chrono>
+#include <time.h>
+#include <stdio.h>
+#include <stdlib.h>
 
 HANDLE main_task_handle=NULL;
 
+extern "C" uint64_t ms_per_tick;
 uint64_t ms_per_tick=5;
 
 static  __unused  const char * TAG="main";
@@ -95,6 +100,14 @@ static void main_task(PVOID pParameter)
         app_debug_print("%s:current tick=%u after 500ms\n\r",TAG,current_tick_after_500ms);
         ms_per_tick=(500/(current_tick_after_500ms-current_tick));
         app_debug_print("%s:ms_per_tick=%u\n\r",TAG,ms_per_tick);
+        {
+            //检查steady_clock
+            using namespace std::literals;//启用如1ms 24h等用法
+            auto tp1=std::chrono::steady_clock::now();
+            iot_os_sleep(1000);
+            auto tp2=std::chrono::steady_clock::now();
+            app_debug_print("%s:steady_clock %llu between 1000ms\r\n",TAG,((tp2-tp1)/ 1ms));
+        }
     }
 
     {

@@ -28,6 +28,8 @@ config APP_DEBUG
     bool "debug mode"
     default n
 
+
+
 menuconfig APP_AUTOMOUNT_FLASH
     bool "internal flash filesystem automount"
     default y

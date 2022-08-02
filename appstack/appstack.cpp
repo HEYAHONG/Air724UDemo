@@ -6,6 +6,12 @@
 #include "stdlib.h"
 #include "appmqtt.hpp"
 #include "network.h"
+#include <chrono>
+#include <string>
+#include <iomanip>
+#include <ctime>
+
+
 
 static __unused const char * TAG="appstack";
 
@@ -32,7 +38,14 @@ void app_init()
         {
             if(is_state_change)
             {
-                app_debug_print("%s:network is  connected,csq=%u!\r\n",TAG,(uint32_t)csq);
+                std::chrono::time_point<std::chrono::system_clock> tp=std::chrono::system_clock::now();
+                time_t time=std::chrono::system_clock::to_time_t(tp);
+                struct tm tmstruct={0};
+                localtime_r(&time,&tmstruct);
+                std::stringstream timestream;
+                timestream<<std::put_time(&tmstruct,"%F %T GMT");
+                app_debug_print("%s:network is  connected,csq=%u!(%s)\r\n",TAG,(uint32_t)csq,timestream.str().c_str());
+
             }
         }
 
@@ -43,7 +56,6 @@ void app_init()
     };
 
     network_add_callback(network_callback);
-
 
 }
 
