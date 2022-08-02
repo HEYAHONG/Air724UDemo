@@ -9,7 +9,7 @@
 #include "stdio.h"
 #include "string.h"
 
-HANDLE lock=NULL;
+static HANDLE lock=NULL;
 
 //初始化app_debug,默认使用UART2,921600
 void app_debug_init()
@@ -30,19 +30,39 @@ void app_debug_init()
 //输出调试信息
 void app_debug_print(const char * fmt,...)
 {
-    char *buff=iot_os_malloc(4096);
-    memset(buff,0,4096);
+    va_list args;
+    va_start(args, fmt);
+    vprintf(fmt,args);
+}
+
+int write_tty(char *ptr,int len)
+{
+    if(lock==NULL)
     {
-        va_list args;
-        va_start(args, fmt);
-        vsnprintf(buff, 4095, fmt, args);
+        return 0;
     }
 
     iot_os_wait_semaphore(lock,0);
 
-    iot_uart_write(OPENAT_UART_2,(UINT8 *)buff,strlen(buff));
+    iot_uart_write(OPENAT_UART_2,(UINT8 *)ptr,len);
 
     iot_os_release_semaphore(lock);
 
-    iot_os_free(buff);
+    return len;
+}
+
+int read_tty(char *ptr,int len)
+{
+    if(lock==NULL)
+    {
+        return 0;
+    }
+
+    iot_os_wait_semaphore(lock,0);
+
+    len=iot_uart_read(OPENAT_UART_2,(UINT8 *)ptr,len,2000);
+
+    iot_os_release_semaphore(lock);
+
+    return len;
 }

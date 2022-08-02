@@ -11,9 +11,6 @@
 #include "iot_os.h"
 
 
-/* Variables */
-extern int __io_putchar(int ch) __attribute__((weak));
-extern int __io_getchar(void) __attribute__((weak));
 
 
 char *__env[1] = { 0 };
@@ -42,27 +39,39 @@ void _exit (int status)
     while (1) {}		/* Make sure we hang here */
 }
 
+
+
+extern int read_tty(char *ptr,int len);
 __attribute__((weak)) int _read(int file, char *ptr, int len)
 {
-    int DataIdx;
 
-    for (DataIdx = 0; DataIdx < len; DataIdx++)
+    if(ptr==NULL)
     {
-        *ptr++ = __io_getchar();
+        return 0;
     }
 
-    return len;
+    if(file==0)
+    {
+        return read_tty(ptr,len);
+    }
+
+    return 0;
 }
 
+extern int write_tty(char *ptr,int len);
 __attribute__((weak)) int _write(int file, char *ptr, int len)
 {
-    int DataIdx;
-
-    for (DataIdx = 0; DataIdx < len; DataIdx++)
+    if(ptr==NULL)
     {
-        __io_putchar(*ptr++);
+        return 0;
     }
-    return len;
+
+    if(file==1 || file == 2)
+    {
+        return write_tty(ptr,len);
+    }
+
+    return 0;
 }
 
 int _close(int file)
