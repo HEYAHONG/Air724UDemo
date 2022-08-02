@@ -29,6 +29,15 @@ cd %PROJECT_PATH%
 
 python3 -m genconfig --config-out .config
 
+@rem 设定Kconfig中的Core
+FOR /F "usebackq delims=#" %%i IN (`FINDSTR /V /C:# %PROJECT_PATH%\.config`) do set %%i
+
+if "%CONFIG_CORE_BASE%" == "y" set  AM_MODEL=iot_SDK_720U
+if "%CONFIG_CORE_BT_TTS%" == "y" set  AM_MODEL=iot_SDK_720U_BT_TTS
+if "%CONFIG_CORE_BT_TTS_VOLTE%" == "y" set  AM_MODEL=iot_SDK_720U_BT_TTS_VOLTE
+
+
+@rem 处理CMAKE定义
 SET CMAKEDEF=
 FOR /F "usebackq delims=#" %%i IN (`FINDSTR /V /C:# %PROJECT_PATH%\.config`) do call  :CMakeAddDef  -D%%i
 

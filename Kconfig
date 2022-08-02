@@ -1,4 +1,22 @@
 
+choice CORE_TYPE
+    bool "Core"
+    default  CORE_BT_TTS_VOLTE
+
+config CORE_BASE_NOT_CONFIG
+    bool "Not Config"
+
+config CORE_BASE
+    bool "Base(APP RESOURCE:2300KB+ FileSystem 3700KB+ RAM)"
+
+config CORE_BT_TTS
+    bool "BT+TTS(APP RESOURCE:1400KB+ FileSystem 3400KB+ RAM)"
+
+config CORE_BT_TTS_VOLTE
+    bool "BT+TTS+VOLTE(APP RESOURCE:900KB+ FileSystem 800KB+ RAM)"
+
+endchoice
+
 config APP_ENTER_MESSAGE
     string "app enter message"
     default "APP Start"
