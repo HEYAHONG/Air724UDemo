@@ -106,7 +106,7 @@ static void main_task(PVOID pParameter)
             auto tp1=std::chrono::steady_clock::now();
             iot_os_sleep(1000);
             auto tp2=std::chrono::steady_clock::now();
-            app_debug_print("%s:steady_clock %llu between 1000ms\r\n",TAG,((tp2-tp1)/ 1ms));
+            app_debug_print("%s:steady_clock interval %llu in 1000ms\r\n",TAG,((tp2-tp1)/ 1ms));
         }
     }
 
@@ -173,7 +173,7 @@ static void main_task(PVOID pParameter)
                 T_AMOPENAT_FILE_INFO info= {0};
                 if(0<=iot_fs_get_fs_info((char *)CONFIG_APP_AUTOMOUNT_FLASH_PATH,&info))
                 {
-                    app_debug_print("%s: filesystem %s total %llu Bytes used %llu Bytes\n\r",TAG,CONFIG_APP_AUTOMOUNT_FLASH_PATH,info.totalSize,info.usedSize);
+                    app_debug_print("%s: filesystem %s Total %llu Bytes,Used %llu Bytes\n\r",TAG,CONFIG_APP_AUTOMOUNT_FLASH_PATH,info.totalSize,info.usedSize);
                 }
             }
             else
@@ -186,7 +186,7 @@ static void main_task(PVOID pParameter)
             T_AMOPENAT_FILE_INFO info= {0};
             if(0<=iot_fs_get_fs_info((char *)"/",&info))
             {
-                app_debug_print("%s: filesystem %s total %llu Bytes used %llu Bytes\n\r",TAG,"/",info.totalSize,info.usedSize);
+                app_debug_print("%s: filesystem %s Total %llu Bytes,Used %llu Bytes\n\r",TAG,"/",info.totalSize,info.usedSize);
             }
         }
 
