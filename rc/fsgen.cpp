@@ -9,16 +9,18 @@
 #include "stdint.h"
 
 std::vector<std::string> filelist;
-void listdir(std::string dirname)
+void listdir(std::string dirname,std::string root)
 {
+#ifdef WIN32
+#endif // WIN32
     DIR *dir=NULL;
     if(dirname.empty())
     {
-        dir=opendir(".");
+        dir=opendir(root.c_str());
     }
     else
     {
-        dir=opendir(dirname.c_str());
+        dir=opendir((root+dirname).c_str());
     }
     if(dir!=NULL)
     {
@@ -27,7 +29,7 @@ void listdir(std::string dirname)
         {
             std::string name=dirname+std::string(dirnode->d_name,dirnode->d_namlen);
             struct stat state= {0};
-            if(0!=stat(name.c_str(),&state))
+            if(0!=stat((root+name).c_str(),&state))
             {
                 continue;
             }
@@ -42,17 +44,17 @@ void listdir(std::string dirname)
             }
             if(state.st_mode & S_IFDIR)
             {
-                if(name.find("..")!=std::string::npos || name.find("/..")!=std::string::npos)
+                if(std::string(dirnode->d_name,dirnode->d_namlen)=="..")
                 {
                     //不向上遍历
                     continue;
                 }
-                if(name=="." || name.find("/.")!=std::string::npos)
+                if(std::string(dirnode->d_name,dirnode->d_namlen)==".")
                 {
                     //不遍历本目录
                     continue;
                 }
-                listdir(name+"/");
+                listdir(name+"/",root);
             }
         }
         closedir(dir);
@@ -61,10 +63,10 @@ void listdir(std::string dirname)
 }
 
 std::vector<RC_Info_t> RC_Info_List;
-void fsgen()
+void fsgen(std::string filename,std::string root)
 {
     std::fstream RC_FS;
-    RC_FS.open("../RC_fs.c",std::ios_base::out );
+    RC_FS.open(filename.c_str(),std::ios_base::out );
     if(RC_FS.is_open())
     {
         RC_FS.clear();
@@ -91,7 +93,7 @@ void fsgen()
                 }
                 std::string filename=(*it);
                 std::fstream File;
-                File.open(filename.c_str(),std::ios_base::in|std::ios_base::binary);
+                File.open((root+filename).c_str(),std::ios_base::in|std::ios_base::binary);
                 if(File.is_open())
                 {
                     RC_Info_item.data_offset=current_rc_data;
@@ -154,7 +156,7 @@ void fsgen()
                     break;
                 }
                 std::string filename=(*it);
-                if(access( filename.c_str(),R_OK)==0)
+                if(access((root+filename).c_str(),R_OK)==0)
                 {
                     {
                         RC_FS << "//" <<  filename.c_str() << "\n";
@@ -210,17 +212,22 @@ void fsgen()
     }
 }
 
-int main()
+int main(int argc,char *argv[])
 {
-    if(chdir("fs")!=0)
+    if(argc<3)
     {
-        //切换到工作目录失败
         return -1;
     }
 
-    listdir("");
+    setbuf(stdout,NULL);
 
-    fsgen();
+    {
+        printf("root:%s\nRC_fs.c:%s\n",argv[1],argv[2]);
+    }
+
+    listdir("",std::string(argv[1])+"/");
+
+    fsgen(argv[2],std::string(argv[1])+"/");
 
     return 0;
 
