@@ -357,12 +357,21 @@ static void mqtt_ping_task(void *arg)
 
 }
 
+
+HANDLE mqtt_receive_task_handle=NULL;
+HANDLE mqtt_ping_task_handle=NULL;
 void MQTT_Init()
 {
-
+    if(mqtt_receive_task_handle!=NULL &&mqtt_ping_task_handle !=NULL)
+    {
+        return;
+    }
+    else
+    {
+        app_debug_print("%s:Init!\r\n",TAG);
+    }
     uint8_t pri=app_get_auto_task_priority();
-
-    iot_os_create_task(mqtt_receive_task, NULL, 6144, pri, OPENAT_OS_CREATE_DEFAULT,(char *) "MQTT Receive");
-    iot_os_create_task(mqtt_ping_task, NULL, 2048, pri, OPENAT_OS_CREATE_DEFAULT,(char *) "MQTT Ping");
+    mqtt_receive_task_handle=iot_os_create_task(mqtt_receive_task, NULL, 6144, pri, OPENAT_OS_CREATE_DEFAULT,(char *) "MQTT Receive");
+    mqtt_ping_task_handle=iot_os_create_task(mqtt_ping_task, NULL, 2048, pri, OPENAT_OS_CREATE_DEFAULT,(char *) "MQTT Ping");
 
 }

@@ -27,11 +27,12 @@ void network_start_connect();
 //获取当前状态
 NetWork_State_t network_get_state();
 
-
+typedef void (*network_init_t)();
+typedef void (*network_loop_t)(NetWork_State_t current_state,bool is_state_change,int8_t csq);
 typedef struct
 {
-    void (*init)();
-    void (*loop)(NetWork_State_t current_state,bool is_state_change,int8_t csq);
+    network_init_t init;
+    network_loop_t loop;
 } network_callback_t;
 
 //设置网络回调
@@ -41,5 +42,15 @@ void network_set_callback(network_callback_t cb);
 }
 #endif // __cplusplus
 
+#ifdef __cplusplus
+
+#include "functional"
+#include "vector"
+typedef void (network_loop_cpp_t)(NetWork_State_t current_state,bool is_state_change,int8_t csq);
+
+//CPP回调函数,只在任务循环调用
+void network_add_callback(std::function<network_loop_cpp_t> func);
+
+#endif // __cplusplus
 
 #endif // NETWORK_H_INCLUDED

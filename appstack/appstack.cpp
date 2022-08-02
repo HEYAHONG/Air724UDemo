@@ -15,26 +15,34 @@ uint8_t app_get_auto_task_priority()
     return auto_task_priority++;
 }
 
-extern "C"
-{
-
-}
 
 
 
 void app_init()
 {
-    {
-        //等待网络连接
-        while(NETWORK_STATE_CONNECTED!=network_get_state())
-        {
-            iot_os_sleep(1000);
-            app_debug_print("%s:wait for network!!!\n\r",TAG);
-        }
-    }
 
-    //MQTT初始化
-    MQTT_Init();
+    auto network_callback=[=](NetWork_State_t current_state,bool is_state_change,int8_t csq)->void
+    {
+        if(current_state!=NETWORK_STATE_CONNECTED)
+        {
+            app_debug_print("%s:network is not connected,csq=%u!\r\n",TAG,(uint32_t)csq);
+            return;
+        }
+        else
+        {
+            if(is_state_change)
+            {
+                app_debug_print("%s:network is  connected,csq=%u!\r\n",TAG,(uint32_t)csq);
+            }
+        }
+
+        //下列代码可能会多次调用
+
+        //MQTT初始化
+        MQTT_Init();
+    };
+
+    network_add_callback(network_callback);
 
 
 }
