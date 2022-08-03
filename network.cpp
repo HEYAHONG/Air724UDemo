@@ -167,6 +167,8 @@ static void network_task(PVOID pParameter)
 
 void network_init()
 {
+    callback.init=NULL;
+    callback.loop=NULL;
     network_task_handle = iot_os_create_task(network_task, NULL, 4096, 2, OPENAT_OS_CREATE_DEFAULT, (char *)"network");
     //注册网络状态回调函数
     iot_network_set_cb(networkIndCallBack);

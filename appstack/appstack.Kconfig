@@ -4,3 +4,31 @@ config APPSTACK_MIN_AUTO_TASK_PRIORITY
     range 10 127
     default 32
 
+menu "MQTT"
+
+choice MQTT_STACK
+    bool "Choose MQTT Stack"
+    default  MQTT_STACK_SMGS
+
+config MQTT_STACK_SMGS
+    bool "SMGS"
+
+endchoice
+
+config MQTT_HOST
+    string "hostname"
+    default "mqtt.hyhsystem.cn"
+
+config MQTT_PORT
+    int "port"
+    default 1883
+
+if MQTT_STACK_SMGS
+
+config MQTT_STACK_SMGS_KEEPALIVE
+    int "keepalive"
+    default 120
+
+endif
+
+endmenu
