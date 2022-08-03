@@ -22,22 +22,17 @@ extern "C"
 extern "C"
 {
 #include "MQTTClient.h"
-    extern void * cpp_malloc(size_t nsize);
-    extern void cpp_free(void *p);
 #include "debug.h"
 #include "string.h"
 }
 static const char * TAG="MQTT_SMGS";
 
-extern struct Network mqttserver;
-extern struct MQTTClient mqttclient;
-
 extern SMGS_gateway_context_t gateway_context;
 
-static void mqttmessageHandler(MessageData*msg)
+void MQTT_SMGS_OnMessage(MQTT_Cfg_t &cfg,MQTT_Message_Ptr_t msg)
 {
     uint8_t buff[4096]= {0};
-    SMGS_GateWay_Receive_MQTT_MSG(&gateway_context,msg->topicName->lenstring.data,msg->topicName->lenstring.len,(uint8_t *)msg->message->payload,msg->message->payloadlen,msg->message->qos,msg->message->retained,buff,sizeof(buff));
+    SMGS_GateWay_Receive_MQTT_MSG(&gateway_context,msg->topic.c_str(),msg->topic.length(),(uint8_t *)msg->payload.c_str(),msg->payload.length(),msg->qos,msg->retain,buff,sizeof(buff));
 }
 
 
@@ -85,7 +80,7 @@ bool SMGS_Device_ReadSensor(SMGS_device_context_t *ctx,SMGS_topic_string_ptr_t p
 
 
 
-SMGS_gateway_context_t gateway_context={0};
+SMGS_gateway_context_t gateway_context= {0};
 
 bool SMGS_GateWay_Command(SMGS_gateway_context_t *ctx,SMGS_topic_string_ptr_t plies[],SMGS_payload_cmdid_t *cmdid,uint8_t *cmddata,size_t cmddata_length,uint8_t *retbuff,size_t *retbuff_length,SMGS_payload_retcode_t *ret)
 {
@@ -132,35 +127,12 @@ SMGS_device_context_t * SMGS_Device_Next(struct __SMGS_gateway_context_t *ctx,SM
 
 static bool SMGS_MessagePublish(struct __SMGS_gateway_context_t *ctx,const char * topic,void * payload,size_t payloadlen,uint8_t qos,int retain)
 {
-    if(MQTTIsConnected(&mqttclient)==0)
-    {
-        return false;
-    }
-
-    QoS Qos=QOS0;
-    switch(qos)
-    {
-    default:
-        break;
-    case 0:
-        Qos=QOS0;
-        break;
-    case 1:
-        Qos=QOS1;
-        break;
-    case 2:
-        Qos=QOS2;
-        break;
-
-    }
-
-    MQTTMessage msg;
-    memset(&msg,0,sizeof(msg));
-    msg.payload=payload;
-    msg.payloadlen=payloadlen;
-    msg.qos=Qos;
-    msg.retained=retain;
-    return MQTTPublish(&mqttclient,topic,&msg)==0;
+    MQTT_Message_Ptr_t ptr=std::make_shared<MQTT_Message_t>();
+    ptr->topic=std::string(topic);
+    ptr->payload=std::string((char *)payload,payloadlen);
+    ptr->qos=qos;
+    ptr->retain=retain;
+    return MQTT_Publish_Message(ptr);
 }
 extern  "C" const char * get_imei();
 void MQTT_SMGS_Init(MQTT_Cfg_t &cfg)
@@ -191,6 +163,8 @@ void MQTT_SMGS_Init(MQTT_Cfg_t &cfg)
         cfg.auth.username=GateWaySerialNumber;
         cfg.auth.password=GateWaySerialNumber;
         cfg.cleansession=true;
+        cfg.subscribe.subtopic=(std::string(GateWaySerialNumber)+"/#");
+        cfg.subscribe.qos=0;
 
     }
 
@@ -237,19 +211,9 @@ void MQTT_SMGS_Init(MQTT_Cfg_t &cfg)
     }
 }
 
-static std::string substr;
+
 void MQTT_SMGS_Connect(MQTT_Cfg_t &cfg)
 {
-    {
-        {
-            substr=(std::string(GateWaySerialNumber)+"/#");
-            if(SUCCESS!=MQTTSubscribe(&mqttclient,substr.c_str(),QOS0,mqttmessageHandler))
-            {
-                mqttserver.disconnect(&mqttserver);
-                app_debug_print("%s:mqtt subscribe failed!!\r\n",TAG);
-            }
-        }
-    }
 
     {
         //发送网关上线消息

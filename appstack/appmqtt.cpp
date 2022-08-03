@@ -43,6 +43,44 @@ void MQTT_Set_Callback(MQTT_Callback_t cb)
 {
     (*callback)=cb;
 }
+
+bool MQTT_Publish_Message(MQTT_Message_Ptr_t msg)
+{
+    auto client=&mqttclient;
+    if(client==NULL || client->buf ==NULL || client->buf_size ==0 || client->ipstack==NULL || client->ipstack->mqttwrite==NULL)
+    {
+        return false;//参数有误
+    }
+    if(MQTTIsConnected(&mqttclient)==0)
+    {
+        return false;
+    }
+
+    QoS Qos=QOS0;
+    switch(msg->qos)
+    {
+    default:
+        break;
+    case 0:
+        Qos=QOS0;
+        break;
+    case 1:
+        Qos=QOS1;
+        break;
+    case 2:
+        Qos=QOS2;
+        break;
+
+    }
+
+    struct MQTTMessage Msg;
+    memset(&Msg,0,sizeof(Msg));
+    Msg.payload=(char *)msg->payload.c_str();
+    Msg.payloadlen=msg->payload.length();
+    Msg.qos=Qos;
+    Msg.retained=msg->retain;
+    return MQTTPublish(&mqttclient,msg->topic.c_str(),&Msg)==0;
+}
 static bool check_cfg(MQTT_Cfg_t &Cfg)
 {
     if(Cfg.host.empty())
@@ -66,6 +104,20 @@ static bool check_cfg(MQTT_Cfg_t &Cfg)
     }
 
     return true;
+}
+
+static void mqttmessageHandler(MessageData*msg)
+{
+    MQTT_Message_Ptr_t ptr=std::make_shared<MQTT_Message_t>();
+    ptr->topic=std::string(msg->topicName->lenstring.data,msg->topicName->lenstring.len);
+    ptr->payload=std::string((char *)msg->message->payload,msg->message->payloadlen);
+    ptr->qos=(uint8_t)msg->message->qos;
+    ptr->retain=msg->message->retained;
+
+    if(callback->onmessage!=NULL)
+    {
+        callback->onmessage(*Cfg,ptr);
+    }
 }
 
 static void mqtt_receive_task(void *arg)
@@ -136,6 +188,35 @@ static void mqtt_receive_task(void *arg)
             }
         }
 
+        {
+            if(!Cfg->subscribe.subtopic.empty())
+            {
+                QoS Qos=QOS0;
+                switch(Cfg->subscribe.qos)
+                {
+                default:
+                    break;
+                case 0:
+                    Qos=QOS0;
+                    break;
+                case 1:
+                    Qos=QOS1;
+                    break;
+                case 2:
+                    Qos=QOS2;
+                    break;
+
+                }
+                if(SUCCESS!=MQTTSubscribe(&mqttclient,Cfg->subscribe.subtopic.c_str(),Qos,mqttmessageHandler))
+                {
+                    mqttserver.disconnect(&mqttserver);
+                    app_debug_print("%s:mqtt subscribe failed!!\r\n",TAG);
+                    continue;
+                }
+            }
+        }
+
+
 
         {
             if(callback->connect!=NULL)
@@ -157,7 +238,7 @@ static void mqtt_receive_task(void *arg)
 
         if(callback->disconnect!=NULL)
         {
-                callback->disconnect(*Cfg);
+            callback->disconnect(*Cfg);
         }
 
         app_debug_print("%s:mqtt yield failed!!restarting!!!\r\n",TAG);
@@ -219,13 +300,14 @@ void MQTT_Init()
         callback=std::make_shared<MQTT_Callback_t>();
 
 
-        MQTT_Callback_t cb={NULL,NULL,NULL};
+        MQTT_Callback_t cb= {NULL,NULL,NULL,NULL};
         MQTT_Set_Callback(cb);
 
 #if CONFIG_MQTT_STACK_SMGS == 1
         cb.init=MQTT_SMGS_Init;
         cb.connect=MQTT_SMGS_Connect;
         cb.disconnect=MQTT_SMGS_DisConnect;
+        cb.onmessage=MQTT_SMGS_OnMessage;
         MQTT_Set_Callback(cb);
 #endif // CONFIG_MQTT_STACK_SMGS
         {

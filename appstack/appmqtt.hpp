@@ -42,7 +42,11 @@ typedef struct
         uint8_t will_qos;//遗嘱qos
         bool will_retain;//遗嘱是否为保留消息
     } will;
-
+    struct _subscribe
+    {
+        std::string subtopic;//订阅主题
+        int qos;//订阅的服务质量
+    } subscribe;
 } MQTT_Cfg_t;
 
 typedef struct
@@ -65,6 +69,7 @@ typedef struct
     std::function<void(MQTT_Cfg_t &)> init;
     std::function<void(MQTT_Cfg_t &)> connect;
     std::function<void(MQTT_Cfg_t &)> disconnect;
+    std::function<void(MQTT_Cfg_t &,MQTT_Message_Ptr_t)> onmessage;
 } MQTT_Callback_t;
 
 /*
@@ -72,6 +77,10 @@ typedef struct
 */
 void MQTT_Set_Callback(MQTT_Callback_t cb);
 
+/*
+发布消息
+*/
+bool MQTT_Publish_Message(MQTT_Message_Ptr_t msg);
 
 #endif // __cplusplus
 

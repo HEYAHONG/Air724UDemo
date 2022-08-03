@@ -10,6 +10,8 @@ void MQTT_SMGS_Connect(MQTT_Cfg_t &cfg);
 
 void MQTT_SMGS_DisConnect(MQTT_Cfg_t &cfg);
 
+void MQTT_SMGS_OnMessage(MQTT_Cfg_t &cfg,MQTT_Message_Ptr_t msg);
+
 #endif // __cplusplus
 
 #endif // APPMQTT_SMGS_H
