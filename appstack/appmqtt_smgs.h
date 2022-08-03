@@ -4,6 +4,10 @@
 
 #ifdef __cplusplus
 
+/*
+下列函数均用于回调函数,请不要手动调用它们。
+*/
+
 void MQTT_SMGS_Init(MQTT_Cfg_t &cfg);
 
 void MQTT_SMGS_Connect(MQTT_Cfg_t &cfg);

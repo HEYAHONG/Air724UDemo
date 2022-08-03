@@ -29,8 +29,16 @@ cd %PROJECT_PATH%
 
 python3 -m genconfig --config-out .config
 
-@rem 设定Kconfig中的Core
+@rem 设定Kconfig中的变量
 FOR /F "usebackq delims=#" %%i IN (`FINDSTR /V /C:# %PROJECT_PATH%\.config`) do set %%i
+
+if not  %CONFIG_CSDK_VER% == "" set CSDK_VER=%CONFIG_CSDK_VER:"=%
+if not  %CONFIG_CSDK_PRO% == "" set CSDK_PRO=%CONFIG_CSDK_PRO:"=%
+if not  %CONFIG_FOTA_FLAG% == "" set FOTA_FLAG=%CONFIG_FOTA_FLAG:"=%
+if not  %CONFIG_FOTA_TYPE% == "" set CSDK_PRO=%CONFIG_FOTA_TYPE:"=%
+
+if "%CONFIG_RELEASE_TYPE_DEBUG%" == "y" set  BUILD_RELEASE_TYPE=debug
+if "%CONFIG_RELEASE_TYPE_RELEASE%" == "y" set  BUILD_RELEASE_TYPE=release
 
 if "%CONFIG_CORE_BASE%" == "y" set  AM_MODEL=iot_SDK_720U
 if "%CONFIG_CORE_BT_TTS%" == "y" set  AM_MODEL=iot_SDK_720U_BT_TTS

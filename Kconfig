@@ -1,4 +1,32 @@
 
+config CSDK_VER
+    string "version"
+    default "1.0.0"
+
+config CSDK_PRO
+    string "project name"
+    default "Air724UDemo"
+
+config FOTA_FLAG
+    string "fota flag"
+    default ""
+
+config FOTA_TYPE
+    string "fota_type"
+    default ""
+
+choice RELEASE_TYPE
+    bool "debug"
+    default RELEASE_TYPE_DEBUG
+
+config  RELEASE_TYPE_DEBUG
+    bool "debug"
+
+config  RELEASE_TYPE_RELEASE
+    bool "release"    
+
+endchoice
+
 choice CORE_TYPE
     bool "Core"
     default  CORE_BT_TTS_VOLTE
