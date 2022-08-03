@@ -26,6 +26,7 @@ extern "C"
 #include <time.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include "main.h"
 
 HANDLE main_task_handle=NULL;
 
@@ -66,7 +67,7 @@ end:
     return result;
 
 }
-extern "C" const char * get_imei()
+const char * get_imei()
 {
     if(strlen(imei)!=0)
     {
