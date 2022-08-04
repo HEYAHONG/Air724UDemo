@@ -18,7 +18,7 @@ typedef struct Network Network;
 
 struct Network
 {
-#if  CONFIG_BUILD_APP_MBEDTLS == 1
+#if  CONFIG_MQTT_SSL == 1
     void * SSL_Handle;
     const char *cacert;
     size_t cacertlen;
