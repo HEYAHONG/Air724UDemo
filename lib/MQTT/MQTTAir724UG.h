@@ -4,6 +4,7 @@
 
 #include "iot_os.h"
 #include "stdint.h"
+#include "kconfig.h"
 
 typedef struct Timer
 {
@@ -17,7 +18,13 @@ typedef struct Network Network;
 
 struct Network
 {
+#if  CONFIG_BUILD_APP_MBEDTLS == 1
+    void * SSL_Handle;
+    const char *cacert;
+    size_t cacertlen;
+#else
 	int my_socket;
+#endif
 	int (*mqttread) (Network*, unsigned char*, int, int);
 	int (*mqttwrite) (Network*, unsigned char*, int, int);
 	void (*disconnect) (Network*);

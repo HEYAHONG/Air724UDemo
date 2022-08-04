@@ -5,6 +5,9 @@
 #include "iot_os.h"
 #include "errno.h"
 #include "debug.h"
+#if CONFIG_MQTT_SSL == 1
+#include "APPSSL.h"
+#endif // CONFIG_BUILD_APP_MBEDTLS
 
 extern uint64_t ms_per_tick;
 
@@ -82,6 +85,26 @@ void TimerInit(Timer* timer)
 
 int Air724UG_read(Network* n, unsigned char* buffer, int len, int timeout_ms)
 {
+#if CONFIG_MQTT_SSL == 1
+    {
+        int retlen=0;
+        app_mbedtls_read(n->SSL_Handle,buffer,len,timeout_ms,&retlen);
+        if(retlen<0)
+        {
+            switch(retlen)
+            {
+            case MBEDTLS_ERR_SSL_WANT_READ:
+            case MBEDTLS_ERR_SSL_WANT_WRITE:
+            case MBEDTLS_ERR_SSL_ASYNC_IN_PROGRESS:
+            case MBEDTLS_ERR_SSL_CRYPTO_IN_PROGRESS:
+                retlen=0;
+            default:
+                retlen=-1;
+            }
+        }
+        return retlen;
+    }
+#else
     int recvLen = 0;
 
     int timetowaitms=timeout_ms;
@@ -107,11 +130,33 @@ int Air724UG_read(Network* n, unsigned char* buffer, int len, int timeout_ms)
     while (recvLen < len);
 
     return recvLen;
+#endif // CONFIG_BUILD_APP_MBEDTLS
 }
 
 
 int  Air724UG_write(Network* n, unsigned char* buffer, int len, int timeout_ms)
 {
+
+#if CONFIG_MQTT_SSL == 1
+    {
+        int retlen=0;
+        app_mbedtls_write(n->SSL_Handle,buffer,len,timeout_ms,&retlen);
+        if(retlen<0)
+        {
+            switch(retlen)
+            {
+            case MBEDTLS_ERR_SSL_WANT_READ:
+            case MBEDTLS_ERR_SSL_WANT_WRITE:
+            case MBEDTLS_ERR_SSL_ASYNC_IN_PROGRESS:
+            case MBEDTLS_ERR_SSL_CRYPTO_IN_PROGRESS:
+                retlen=0;
+            default:
+                retlen=-1;
+            }
+        }
+        return retlen;
+    }
+#else
     int sentLen = 0;
 
     int timetowaitms=timeout_ms;
@@ -133,18 +178,30 @@ int  Air724UG_write(Network* n, unsigned char* buffer, int len, int timeout_ms)
     while (sentLen < len );
 
     return sentLen;
+#endif // CONFIG_BUILD_APP_MBEDTLS
 }
 
 
 void  Air724UG_disconnect(Network* n)
 {
+#if CONFIG_MQTT_SSL == 1
+    app_mbedtls_disconnect(n->SSL_Handle);
+    n->SSL_Handle=NULL;
+#else
     close(n->my_socket);
+#endif // CONFIG_BUILD_APP_MBEDTLS
 }
 
 
 void NetworkInit(Network* n)
 {
+#if CONFIG_MQTT_SSL == 1
+    n->SSL_Handle=NULL;
+    n->cacert=NULL;
+    n->cacertlen=0;
+#else
     n->my_socket = -1;
+#endif // CONFIG_BUILD_APP_MBEDTLS
     n->mqttread = Air724UG_read;
     n->mqttwrite = Air724UG_write;
     n->disconnect = Air724UG_disconnect;
@@ -153,14 +210,21 @@ void NetworkInit(Network* n)
 
 int NetworkConnect(Network* n, char* addr, int port)
 {
+#if CONFIG_MQTT_SSL == 1
+
+#else
     struct sockaddr_in sAddr;
     memset(&sAddr,0,sizeof(sAddr));
+#endif // CONFIG_BUILD_APP_MBEDTLS
     int retVal = -1;
     struct hostent * ipAddress=NULL;
 
     if ((ipAddress = gethostbyname(addr)) == NULL)
         goto exit;
 
+#if CONFIG_MQTT_SSL == 1
+    retVal=app_mbedtls_connect(&n->SSL_Handle,ipaddr_ntoa((const openat_ip_addr_t *)ipAddress->h_addr_list[0]),port,n->cacert,n->cacertlen,10000);
+#else
     sAddr.sin_family=AF_INET;
     sAddr.sin_port = htons(port);
     inet_aton(ipaddr_ntoa((const openat_ip_addr_t *)ipAddress->h_addr_list[0]),&sAddr.sin_addr);
@@ -173,6 +237,7 @@ int NetworkConnect(Network* n, char* addr, int port)
         close(n->my_socket);
         goto exit;
     }
+#endif // CONFIG_BUILD_APP_MBEDTLS
 
 exit:
     return retVal;

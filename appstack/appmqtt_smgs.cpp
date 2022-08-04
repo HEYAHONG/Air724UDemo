@@ -31,8 +31,12 @@ extern SMGS_gateway_context_t gateway_context;
 
 void MQTT_SMGS_OnMessage(MQTT_Cfg_t &cfg,MQTT_Message_Ptr_t msg)
 {
-    uint8_t buff[4096]= {0};
-    SMGS_GateWay_Receive_MQTT_MSG(&gateway_context,msg->topic.c_str(),msg->topic.length(),(uint8_t *)msg->payload.c_str(),msg->payload.length(),msg->qos,msg->retain,buff,sizeof(buff));
+
+    size_t buff_len=4096;
+    uint8_t *buff=new uint8_t[buff_len];
+    memset(buff,0,buff_len);
+    SMGS_GateWay_Receive_MQTT_MSG(&gateway_context,msg->topic.c_str(),msg->topic.length(),(uint8_t *)msg->payload.c_str(),msg->payload.length(),msg->qos,msg->retain,buff,buff_len);
+    delete [] buff;
 }
 
 

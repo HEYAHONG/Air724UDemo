@@ -51,7 +51,13 @@ target_link_libraries(${target} PUBLIC SMGS)
 file(GLOB  C_CPP_FILES *.c *.h *.cpp *.hpp appstack/*.c appstack/*.h  appstack/*.cpp appstack/*.hpp lib/MQTT/*.c lib/MQTT/*.h)
 target_sources(${target} PUBLIC ${C_CPP_FILES})
 add_definitions(" -DMQTTCLIENT_PLATFORM_HEADER=MQTTAir724UG.h -DMQTT_TASK ")
-INCLUDE_DIRECTORIES(. appstack lib/MQTT/)
+INCLUDE_DIRECTORIES(. appstack lib/MQTT/ )
+
+if(CONFIG_BUILD_APP_MBEDTLS)
+file(GLOB  SSL_C_CPP_FILES  lib/SSL/*.c lib/SSL/*.h)
+target_sources(${target} PUBLIC ${SSL_C_CPP_FILES})
+INCLUDE_DIRECTORIES(lib/SSL/ )
+endif()
 
 #添加ril
 target_include_directories(${target} PRIVATE ${CMAKE_SOURCE_DIR}/components/ril/inc)

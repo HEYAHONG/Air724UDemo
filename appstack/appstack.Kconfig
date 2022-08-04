@@ -21,7 +21,7 @@ config MQTT_HOST
 
 config MQTT_PORT
     int "port"
-    default 1883
+    default 8883
 
 if MQTT_STACK_SMGS
 
@@ -29,6 +29,22 @@ config MQTT_STACK_SMGS_KEEPALIVE
     int "keepalive"
     default 120
 
+endif
+
+config MQTT_SSL
+    bool "SSL"
+    default y
+    select BUILD_APP_MBEDTLS
+
+if MQTT_SSL
+
+menu "CERT"
+
+config MQTT_SSL_CERT_CA
+    string "CA Cert RC Path"
+    default "emqx/cacert.pem"
+
+endmenu
 endif
 
 endmenu

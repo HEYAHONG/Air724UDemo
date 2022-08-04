@@ -14,6 +14,7 @@ extern "C"
 #endif // __cplusplus
 
 #include "iot_os.h"
+#include "RC.h"
 
 #ifdef __cplusplus
 };
@@ -143,7 +144,13 @@ static void mqtt_receive_task(void *arg)
 
         app_debug_print("%s:mqtt start!!\r\n",TAG);
         NetworkInit(&mqttserver);
-        while(0!=NetworkConnect(&mqttserver,(char *)"mqtt.hyhsystem.cn",1883))
+#if CONFIG_MQTT_SSL == 1
+        {
+            mqttserver.cacert=Cfg->ssl.cacert.c_str();
+            mqttserver.cacertlen=Cfg->ssl.cacert.length();
+        }
+#endif // CONFIG_MQTT_SSL
+        while(0!=NetworkConnect(&mqttserver,(char *)Cfg->host.c_str(),Cfg->port))
         {
             app_debug_print("%s:connect mqtt server!\r\n",TAG);
             iot_os_sleep(3000);
@@ -313,11 +320,23 @@ void MQTT_Init()
         {
             Cfg->host=CONFIG_MQTT_HOST;
             Cfg->port=CONFIG_MQTT_PORT;
+#if CONFIG_MQTT_SSL == 1
+            {
+                const char * rc=(char *)RCGetHandle(CONFIG_MQTT_SSL_CERT_CA);
+                if(rc)
+                {
+                    Cfg->ssl.cacert=std::string(rc);
+                }
+            }
+#endif // CONFIG_MQTT_SSL
         }
         app_debug_print("%s:Init!\r\n",TAG);
     }
     uint8_t pri=app_get_auto_task_priority();
-    mqtt_receive_task_handle=iot_os_create_task(mqtt_receive_task, NULL, 6144, pri, OPENAT_OS_CREATE_DEFAULT,(char *) "MQTT Receive");
-    mqtt_ping_task_handle=iot_os_create_task(mqtt_ping_task, NULL, 2048, pri, OPENAT_OS_CREATE_DEFAULT,(char *) "MQTT Ping");
+    /*
+    如需启用SSL,需要较大任务栈
+    */
+    mqtt_receive_task_handle=iot_os_create_task(mqtt_receive_task, NULL, 8192, pri, OPENAT_OS_CREATE_DEFAULT,(char *) "MQTT Receive");
+    mqtt_ping_task_handle=iot_os_create_task(mqtt_ping_task, NULL, 8192, pri, OPENAT_OS_CREATE_DEFAULT,(char *) "MQTT Ping");
 
 }

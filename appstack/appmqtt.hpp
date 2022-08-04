@@ -11,6 +11,7 @@ extern "C"
 #endif // __cplusplus
 
 #include "iot_os.h"
+#include "kconfig.h"
 
 #ifdef __cplusplus
 };
@@ -47,6 +48,12 @@ typedef struct
         std::string subtopic;//订阅主题
         int qos;//订阅的服务质量
     } subscribe;
+#if CONFIG_MQTT_SSL == 1
+    struct _ssl
+    {
+        std::string cacert;//启用根证书
+    } ssl;
+#endif // CONFIG_MQTT_SSL
 } MQTT_Cfg_t;
 
 typedef struct

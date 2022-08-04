@@ -16,7 +16,7 @@ config FOTA_TYPE
     default ""
 
 choice RELEASE_TYPE
-    bool "debug"
+    bool "release type"
     default RELEASE_TYPE_DEBUG
 
 config  RELEASE_TYPE_DEBUG
