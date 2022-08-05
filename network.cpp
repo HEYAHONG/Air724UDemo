@@ -91,6 +91,8 @@ static void network_task(PVOID pParameter)
 {
     app_debug_print("%s:network init \n\r",TAG);
 
+    iot_os_sleep(800);
+
     NetWork_State_t current_state=net_state;
 
     if(callback.init!=NULL)
@@ -158,7 +160,7 @@ static void network_task(PVOID pParameter)
 
         }
 
-        iot_os_sleep(1000);
+        iot_os_sleep(3000);
     }
 
     iot_os_delete_task(network_task_handle);
