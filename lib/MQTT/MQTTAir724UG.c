@@ -224,6 +224,7 @@ int NetworkConnect(Network* n, char* addr, int port)
 
 #if CONFIG_MQTT_SSL == 1
     retVal=app_mbedtls_connect(&n->SSL_Handle,addr,port,n->cacert,n->cacertlen,10000);
+    goto exit;
 #else
     sAddr.sin_family=AF_INET;
     sAddr.sin_port = htons(port);
