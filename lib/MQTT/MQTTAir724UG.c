@@ -210,20 +210,20 @@ void NetworkInit(Network* n)
 
 int NetworkConnect(Network* n, char* addr, int port)
 {
+ int retVal = -1;
 #if CONFIG_MQTT_SSL == 1
 
 #else
     struct sockaddr_in sAddr;
     memset(&sAddr,0,sizeof(sAddr));
-#endif // CONFIG_BUILD_APP_MBEDTLS
-    int retVal = -1;
     struct hostent * ipAddress=NULL;
 
     if ((ipAddress = gethostbyname(addr)) == NULL)
         goto exit;
+#endif // CONFIG_BUILD_APP_MBEDTLS
 
 #if CONFIG_MQTT_SSL == 1
-    retVal=app_mbedtls_connect(&n->SSL_Handle,ipaddr_ntoa((const openat_ip_addr_t *)ipAddress->h_addr_list[0]),port,n->cacert,n->cacertlen,10000);
+    retVal=app_mbedtls_connect(&n->SSL_Handle,addr,port,n->cacert,n->cacertlen,10000);
 #else
     sAddr.sin_family=AF_INET;
     sAddr.sin_port = htons(port);
