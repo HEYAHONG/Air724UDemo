@@ -27,7 +27,7 @@ void listdir(std::string dirname,std::string root)
         struct dirent * dirnode=NULL;
         while((dirnode=readdir(dir)))
         {
-            std::string name=dirname+std::string(dirnode->d_name,dirnode->d_namlen);
+            std::string name=dirname+std::string(dirnode->d_name);
             struct stat state= {0};
             if(0!=stat((root+name).c_str(),&state))
             {
@@ -44,12 +44,12 @@ void listdir(std::string dirname,std::string root)
             }
             if(state.st_mode & S_IFDIR)
             {
-                if(std::string(dirnode->d_name,dirnode->d_namlen)=="..")
+                if(std::string(dirnode->d_name)=="..")
                 {
                     //不向上遍历
                     continue;
                 }
-                if(std::string(dirnode->d_name,dirnode->d_namlen)==".")
+                if(std::string(dirnode->d_name)==".")
                 {
                     //不遍历本目录
                     continue;
