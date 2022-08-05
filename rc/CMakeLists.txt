@@ -1,5 +1,5 @@
 
-find_program(FSGEN NAMES fsgen fsgen.exe PATHS . NO_CACHE )
+find_program(FSGEN NAMES fsgen  PATHS . NO_CACHE )
 if(EXISTS ${FSGEN})
     message("rc fsgen:${FSGEN}")
 else()
