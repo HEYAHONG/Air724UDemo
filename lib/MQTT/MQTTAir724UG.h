@@ -18,13 +18,10 @@ typedef struct Network Network;
 
 struct Network
 {
-#if  CONFIG_MQTT_SSL == 1
     void * SSL_Handle;
     const char *cacert;
     size_t cacertlen;
-#else
 	int my_socket;
-#endif
 	int (*mqttread) (Network*, unsigned char*, int, int);
 	int (*mqttwrite) (Network*, unsigned char*, int, int);
 	void (*disconnect) (Network*);

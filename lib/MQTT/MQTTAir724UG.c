@@ -85,7 +85,7 @@ void TimerInit(Timer* timer)
 
 int Air724UG_read(Network* n, unsigned char* buffer, int len, int timeout_ms)
 {
-#if CONFIG_MQTT_SSL == 1
+    if(n->cacert!=NULL && n->cacertlen!=0)
     {
         int retlen=0;
         app_mbedtls_read(n->SSL_Handle,buffer,len,timeout_ms,&retlen);
@@ -104,40 +104,37 @@ int Air724UG_read(Network* n, unsigned char* buffer, int len, int timeout_ms)
         }
         return retlen;
     }
-#else
-    int recvLen = 0;
-
-    int timetowaitms=timeout_ms;
-
-    do
+    else
     {
-        int rc = 0;
-
-        setsockopt(n->my_socket,SOL_SOCKET,SO_RCVTIMEO, &timetowaitms, sizeof(timetowaitms));
-        rc = recv(n->my_socket, buffer + recvLen, len - recvLen, 0);
-        if (rc > 0)
-            recvLen += rc;
-        else if (rc < 0)
+        int recvLen = 0;
+        int timetowaitms=timeout_ms;
+        do
         {
-            recvLen = rc;
-            if(socket_errno(n->my_socket)!=ENOTCONN)
-            {
-                recvLen=0;
-            }
-            break;
-        }
-    }
-    while (recvLen < len);
+            int rc = 0;
 
-    return recvLen;
-#endif // CONFIG_BUILD_APP_MBEDTLS
+            setsockopt(n->my_socket,SOL_SOCKET,SO_RCVTIMEO, &timetowaitms, sizeof(timetowaitms));
+            rc = recv(n->my_socket, buffer + recvLen, len - recvLen, 0);
+            if (rc > 0)
+                recvLen += rc;
+            else if (rc < 0)
+            {
+                recvLen = rc;
+                if(socket_errno(n->my_socket)!=ENOTCONN)
+                {
+                    recvLen=0;
+                }
+                break;
+            }
+        }
+        while (recvLen < len);
+        return recvLen;
+    }
 }
 
 
 int  Air724UG_write(Network* n, unsigned char* buffer, int len, int timeout_ms)
 {
-
-#if CONFIG_MQTT_SSL == 1
+    if(n->cacert!=NULL && n->cacertlen!=0)
     {
         int retlen=0;
         app_mbedtls_write(n->SSL_Handle,buffer,len,timeout_ms,&retlen);
@@ -156,52 +153,51 @@ int  Air724UG_write(Network* n, unsigned char* buffer, int len, int timeout_ms)
         }
         return retlen;
     }
-#else
-    int sentLen = 0;
-
-    int timetowaitms=timeout_ms;
-
-    do
+    else
     {
-        int rc = 0;
-
-        setsockopt(n->my_socket, SOL_SOCKET, SO_RCVTIMEO, &timetowaitms, sizeof(timetowaitms));
-        rc = send(n->my_socket, buffer + sentLen, len - sentLen, 0);
-        if (rc > 0)
-            sentLen += rc;
-        else if (rc < 0)
+        int sentLen = 0;
+        int timetowaitms=timeout_ms;
+        do
         {
-            sentLen = rc;
-            break;
-        }
-    }
-    while (sentLen < len );
+            int rc = 0;
 
-    return sentLen;
-#endif // CONFIG_BUILD_APP_MBEDTLS
+            setsockopt(n->my_socket, SOL_SOCKET, SO_RCVTIMEO, &timetowaitms, sizeof(timetowaitms));
+            rc = send(n->my_socket, buffer + sentLen, len - sentLen, 0);
+            if (rc > 0)
+                sentLen += rc;
+            else if (rc < 0)
+            {
+                sentLen = rc;
+                break;
+            }
+        }
+        while (sentLen < len );
+        return sentLen;
+    }
 }
 
 
 void  Air724UG_disconnect(Network* n)
 {
-#if CONFIG_MQTT_SSL == 1
-    app_mbedtls_disconnect(n->SSL_Handle);
-    n->SSL_Handle=NULL;
-#else
-    close(n->my_socket);
-#endif // CONFIG_BUILD_APP_MBEDTLS
+    if(n->cacert!=NULL && n->cacertlen!=0)
+    {
+        app_mbedtls_disconnect(n->SSL_Handle);
+        n->SSL_Handle=NULL;
+    }
+    else
+    {
+        close(n->my_socket);
+        n->my_socket=-1;
+    }
 }
 
 
 void NetworkInit(Network* n)
 {
-#if CONFIG_MQTT_SSL == 1
     n->SSL_Handle=NULL;
     n->cacert=NULL;
     n->cacertlen=0;
-#else
     n->my_socket = -1;
-#endif // CONFIG_BUILD_APP_MBEDTLS
     n->mqttread = Air724UG_read;
     n->mqttwrite = Air724UG_write;
     n->disconnect = Air724UG_disconnect;
@@ -210,35 +206,33 @@ void NetworkInit(Network* n)
 
 int NetworkConnect(Network* n, char* addr, int port)
 {
- int retVal = -1;
-#if CONFIG_MQTT_SSL == 1
-
-#else
-    struct sockaddr_in sAddr;
-    memset(&sAddr,0,sizeof(sAddr));
-    struct hostent * ipAddress=NULL;
-
-    if ((ipAddress = gethostbyname(addr)) == NULL)
-        goto exit;
-#endif // CONFIG_BUILD_APP_MBEDTLS
-
-#if CONFIG_MQTT_SSL == 1
-    retVal=app_mbedtls_connect(&n->SSL_Handle,addr,port,n->cacert,n->cacertlen,10000);
-    goto exit;
-#else
-    sAddr.sin_family=AF_INET;
-    sAddr.sin_port = htons(port);
-    inet_aton(ipaddr_ntoa((const openat_ip_addr_t *)ipAddress->h_addr_list[0]),&sAddr.sin_addr);
-
-    if ((n->my_socket = socket(AF_INET,OPENAT_SOCK_STREAM, 0)) < 0)
-        goto exit;
-
-    if ((retVal = connect(n->my_socket, (const struct sockaddr *)&sAddr, sizeof(const struct sockaddr))) < 0)
+    int retVal = -1;
+    if(n->cacert!=NULL && n->cacertlen!=0)
     {
-        close(n->my_socket);
+        retVal=app_mbedtls_connect(&n->SSL_Handle,addr,port,n->cacert,n->cacertlen,10000);
         goto exit;
     }
-#endif // CONFIG_BUILD_APP_MBEDTLS
+    else
+    {
+        struct sockaddr_in sAddr;
+        memset(&sAddr,0,sizeof(sAddr));
+        struct hostent * ipAddress=NULL;
+
+        if ((ipAddress = gethostbyname(addr)) == NULL)
+            goto exit;
+        sAddr.sin_family=AF_INET;
+        sAddr.sin_port = htons(port);
+        inet_aton(ipaddr_ntoa((const openat_ip_addr_t *)ipAddress->h_addr_list[0]),&sAddr.sin_addr);
+
+        if ((n->my_socket = socket(AF_INET,OPENAT_SOCK_STREAM, 0)) < 0)
+            goto exit;
+
+        if ((retVal = connect(n->my_socket, (const struct sockaddr *)&sAddr, sizeof(const struct sockaddr))) < 0)
+        {
+            close(n->my_socket);
+            goto exit;
+        }
+    }
 
 exit:
     return retVal;
