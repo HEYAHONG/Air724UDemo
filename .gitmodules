@@ -7,3 +7,6 @@
 [submodule "lib/jsoncpp/jsoncpp"]
 	path = lib/jsoncpp/jsoncpp
 	url = ../../HEYAHONG/jsoncpp.git
+[submodule "lib/protobuf-c/protobuf-c"]
+	path = lib/protobuf-c/protobuf-c
+	url = ../../HEYAHONG/protobuf-c.git

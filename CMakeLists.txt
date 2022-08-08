@@ -76,3 +76,7 @@ target_link_libraries(${target} PRIVATE RC)
 #添加jsoncpp库
 add_subdirectory(lib/jsoncpp/)
 target_link_libraries(${target} PRIVATE jsoncpp)
+
+#添加protobuf-c库
+add_subdirectory(lib/protobuf-c/)
+target_link_libraries(${target} PRIVATE protobuf-c)
