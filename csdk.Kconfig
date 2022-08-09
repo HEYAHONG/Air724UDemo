@@ -1,3 +1,4 @@
+menu "App"
 
 config BUILD_APP_MBEDTLS
     bool "MBEDTLS"
@@ -39,6 +40,11 @@ config BUILD_APP_RTMP
     bool "RTMP"
     default n
 
+endmenu
+
+config BUILD_SFFS
+    bool "build sffs image"
+    default y
 
 
 

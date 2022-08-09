@@ -71,7 +71,7 @@ config APP_AUTOMOUNT_FLASH_PATH
 endif
 
 
-menu "CSDK App"
+menu "CSDK"
 
 source "csdk.Kconfig"
 

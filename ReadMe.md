@@ -24,6 +24,11 @@
   const unsigned char * RCGetHandle(const char * name);
   ```
 
+## SFFS
+
+SFFS是由CSDK支持的预先放置文件的方法。添加文件的目录为[sffs/sffs](sffs/sffs),即目录下的文件将添加至文件系统根目录中,通过iot_fs.h中的API访问。与资源文件不同的是，文件系统中文件可读写，也可存放较大的文件（受APP代码空间限制，资源文件不可存放较大的文件）。
+
+
 
 ## 已知问题
 

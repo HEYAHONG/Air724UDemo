@@ -189,6 +189,23 @@ static void main_task(PVOID pParameter)
             {
                 app_debug_print("%s: filesystem %s Total %llu Bytes,Used %llu Bytes\n\r",TAG,"/",info.totalSize,info.usedSize);
             }
+            {
+                //列出/目录下的文件
+                AMOPENAT_FS_FIND_DATA findResult;
+                const char * dirName="/";
+                int Fd = iot_fs_find_first((char *)dirName, &findResult);
+                if(Fd>=0)
+                {
+
+                    app_debug_print("%s:file list on /\r\n",TAG);
+                    app_debug_print("\t%s:%s\r\n",(findResult.st_mode&E_FS_ATTR_ARCHIVE)?"FILE":"DIR",findResult.st_name);
+                    while(iot_fs_find_next(Fd, &findResult) == 0)
+                    {
+                        app_debug_print("\t%s:%s\r\n",(findResult.st_mode&E_FS_ATTR_ARCHIVE)?"FILE":"DIR",findResult.st_name);
+                    }
+                    iot_fs_find_close(Fd);
+                }
+            }
         }
 
     }

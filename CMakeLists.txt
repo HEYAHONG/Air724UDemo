@@ -80,3 +80,16 @@ target_link_libraries(${target} PRIVATE jsoncpp)
 #添加protobuf-c库
 add_subdirectory(lib/protobuf-c/)
 target_link_libraries(${target} PRIVATE protobuf-c)
+
+#启用SFFS支持
+if(CONFIG_BUILD_SFFS)
+find_program(SFFSCFGGEN NAMES sffscfggen sffscfggen.exe PATHS ./sffs/ REQUIRED)
+find_program(DTOOLS dtools REQUIRED)
+add_custom_target(SFFSIMG
+                  COMMAND ${CMAKE_COMMAND} -E make_directory  ${out_hex_dir}
+                  COMMAND ${CMAKE_COMMAND} -E make_directory  ${out_hex_dir}/oldpac
+                  COMMAND ${SFFSCFGGEN} ${CMAKE_CURRENT_SOURCE_DIR}/sffs/sffs ${out_hex_dir}/sffs.json ${CONFIG_FS_SYS_FLASH_OFFSET}  ${CONFIG_FS_SYS_FLASH_SIZE}
+                  COMMAND ${DTOOLS} fbdevgen -d v  ${out_hex_dir}/sffs.json ${out_hex_dir}/oldpac/sffs.img
+)
+add_dependencies(${target} SFFSIMG)
+endif()
