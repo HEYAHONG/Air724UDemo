@@ -81,6 +81,41 @@ const char * get_imei()
     return NULL;
 }
 
+static void listdir(const char * dirname)
+{
+    AMOPENAT_FS_FIND_DATA findResult;
+    std::vector<std::string> dirlist;
+    int Fd = iot_fs_find_first((char *)dirname, &findResult);
+    if(Fd>=0)
+    {
+        do
+        {
+            std::string parent=dirname;
+            if(dirname[strlen(dirname)-1]!='/')
+            {
+                parent+="/";
+            }
+            std::string name=parent+std::string((char *)findResult.st_name);
+            app_debug_print("\t%s:%s",(findResult.st_mode&E_FS_ATTR_ARCHIVE)?"FILE":"DIR",name.c_str());
+            if((findResult.st_mode&E_FS_ATTR_ARCHIVE))
+            {
+                app_debug_print(" size=%d Bytes",(int)iot_fs_file_size((char *)name.c_str()));
+            }
+            app_debug_print("\r\n");
+            if(!(findResult.st_mode&E_FS_ATTR_ARCHIVE))
+            {
+                dirlist.push_back(name);
+            }
+        }
+        while(iot_fs_find_next(Fd, &findResult) == 0);
+        iot_fs_find_close(Fd);
+    }
+    for(std::string dirname:dirlist)
+    {
+        listdir(dirname.c_str());
+    }
+};
+
 
 static void main_task(PVOID pParameter)
 {
@@ -190,21 +225,8 @@ static void main_task(PVOID pParameter)
                 app_debug_print("%s: filesystem %s Total %llu Bytes,Used %llu Bytes\n\r",TAG,"/",info.totalSize,info.usedSize);
             }
             {
-                //列出/目录下的文件
-                AMOPENAT_FS_FIND_DATA findResult;
-                const char * dirName="/";
-                int Fd = iot_fs_find_first((char *)dirName, &findResult);
-                if(Fd>=0)
-                {
-
-                    app_debug_print("%s:file list on /\r\n",TAG);
-                    app_debug_print("\t%s:%s\r\n",(findResult.st_mode&E_FS_ATTR_ARCHIVE)?"FILE":"DIR",findResult.st_name);
-                    while(iot_fs_find_next(Fd, &findResult) == 0)
-                    {
-                        app_debug_print("\t%s:%s\r\n",(findResult.st_mode&E_FS_ATTR_ARCHIVE)?"FILE":"DIR",findResult.st_name);
-                    }
-                    iot_fs_find_close(Fd);
-                }
+                //列出/目录下的所有文件
+                listdir("/");
             }
         }
 
