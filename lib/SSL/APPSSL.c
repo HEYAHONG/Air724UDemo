@@ -303,7 +303,7 @@ static int app_mbedtls_init(void **handleptr, const char *host, unsigned short p
 #if defined(MBEDTLS_DEBUG_C)
 	mbedtls_debug_set_threshold( DEBUG_LEVEL );
 #endif
-	mbedtls_printf( "\n  . Seeding the random number generator..." );
+	mbedtls_printf( "  . Seeding the random number generator...\n" );
 
 
 
@@ -321,7 +321,7 @@ static int app_mbedtls_init(void **handleptr, const char *host, unsigned short p
 	  /*
 	 * 0. Initialize certificates
 	 */
-	mbedtls_printf( "  . Loading the CA root certificate ..." );
+	mbedtls_printf( "  . Loading the CA root certificate ...\n" );
 
 	if(ca_crt != NULL)
 	{
@@ -339,7 +339,7 @@ static int app_mbedtls_init(void **handleptr, const char *host, unsigned short p
 	/*
 	 * 2. Setup stuff
 	 */
-	mbedtls_printf( "  . Setting up the SSL/TLS structure..." );
+	mbedtls_printf( "  . Setting up the SSL/TLS structure...\n" );
 
 	if( ( ret = mbedtls_ssl_config_defaults( conf,
 					MBEDTLS_SSL_IS_CLIENT,
@@ -351,7 +351,6 @@ static int app_mbedtls_init(void **handleptr, const char *host, unsigned short p
 		goto exit;
 	}
 
-	mbedtls_printf( " ok\n" );
 
 	/* OPTIONAL is not optimal for security,
 	 * but makes interop easier in this simplified example */
@@ -403,7 +402,7 @@ int app_mbedtls_connect(void **handle, const char *host, unsigned short port, co
 
 
     uint32_t flags;
-	mbedtls_printf(" . tls init ....");
+	mbedtls_printf("  . tls init ....\n");
 	if((exit_code = app_mbedtls_init(handle,host,port,ca_crt,ca_crt_len))  != MBEDTLS_ERR_TLS_ERR_NO)
 		return exit_code;
 
@@ -411,7 +410,7 @@ int app_mbedtls_connect(void **handle, const char *host, unsigned short port, co
 	/*
      * 1. Start the connection
      */
-    mbedtls_printf( "  . Connecting to tcp/%s/%d...", host, port );
+    mbedtls_printf( "  . Connecting to tcp/%s/%d...\n", host, port );
 
     if( ( ret = mbedtls_net_connect_v2( &wxpp_handle->client_fd, host,
                                          port, MBEDTLS_NET_PROTO_TCP ) ) != 0 )
@@ -424,7 +423,7 @@ int app_mbedtls_connect(void **handle, const char *host, unsigned short port, co
     /*
      * 4. Handshake
      */
-    mbedtls_printf( "  . Performing the SSL/TLS handshake..." );
+    mbedtls_printf( "  . Performing the SSL/TLS handshake...\n" );
 
     while( ( ret = mbedtls_ssl_handshake( &wxpp_handle->ssl ) ) != 0 )
     {
@@ -441,7 +440,7 @@ int app_mbedtls_connect(void **handle, const char *host, unsigned short port, co
     /*
      * 5. Verify the server certificate
      */
-    mbedtls_printf( "  . Verifying peer X.509 certificate..." );
+    mbedtls_printf( "  . Verifying peer X.509 certificate...\n" );
 
     /* In real life, we probably want to bail out when ret != 0 */
     if( ( flags = mbedtls_ssl_get_verify_result( &wxpp_handle->ssl ) ) != 0 )
