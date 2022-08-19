@@ -1,8 +1,4 @@
 
-config NETWORK_START_ON_BOOT
-    bool "start network on boot"
-    default y
-
 config NETWORK_START_CONNECT_READY
     bool "start connect on network ready"
     default y

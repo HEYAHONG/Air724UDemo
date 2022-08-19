@@ -27,6 +27,7 @@ extern "C"
 #include <stdio.h>
 #include <stdlib.h>
 #include "main.h"
+#include "bluetooth.h"
 
 HANDLE main_task_handle=NULL;
 
@@ -145,6 +146,11 @@ static void main_task(PVOID pParameter)
             app_debug_print("%s:steady_clock interval %llu in 1000ms\r\n",TAG,((tp2-tp1)/ 1ms));
         }
     }
+
+    {
+        app_debug_print("%s:bluetooth %s\r\n",TAG,bluetooth_hasbluetooth()?"supported":"not supported");
+    }
+
 
     {
         //获取IMEI
@@ -274,11 +280,9 @@ extern "C" int appimg_enter(void *param)
 
     app_debug_init();
 
-
-#if CONFIG_NETWORK_START_ON_BOOT == 1
     network_init();
-#endif // CONFIG_NETWORK_START_ON_BOOT
 
+    bluetooth_init();
 
     main_task_handle = iot_os_create_task(main_task, NULL, 4096, 5, OPENAT_OS_CREATE_DEFAULT, (char *)"main");
     return 0;
