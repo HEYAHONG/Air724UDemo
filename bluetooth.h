@@ -37,6 +37,31 @@ bool bluetooth_hasbluetooth();
  */
 void bluetooth_add_callback(bluetooth_callback_t cb);
 
+
+typedef enum
+{
+    BLUETOOTH_BLE_PERIPHERAL=BLE_SLAVE, /**< 外设模式 */
+    BLUETOOTH_BLE_CENTRAL=BLE_MASTER, /**< 中心设备模式 */
+    BLUETOOTH_CLASS_BT=BT_CLASSIC, /**< 经典蓝牙模式 */
+    BLUETOOTH_OFF,/**< 蓝牙未打开或不可用 */
+} BLUETOOTH_MODE;
+
+/** \brief 获取当前工作模式
+ *
+ * \return BLUETOOTH_MODE 工作模式
+ *
+ */
+BLUETOOTH_MODE bluetooth_get_currentmode();
+
+/** \brief 切换工作模式（打开或者关闭蓝牙）。
+ *  似乎CSDK不支持多次打开或者关闭蓝牙，不能多次调用此函数
+ *
+ * \param workmode BLUETOOTH_MODE 工作模式
+ * \return bool 是否成功
+ *
+ */
+bool bluetooth_switch_mode(BLUETOOTH_MODE workmode);
+
 #ifdef __cplusplus
 }
 #endif // __cplusplus

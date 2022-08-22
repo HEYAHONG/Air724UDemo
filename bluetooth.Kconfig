@@ -1,0 +1,26 @@
+
+choice BLUETOOTH_MODE
+    bool "Default Bluetooth Mode"
+    default BLUETOOTH_MODE_PERIPHERAL
+
+config BLUETOOTH_MODE_PERIPHERAL
+    bool "BLE Peripheral"
+
+config BLUETOOTH_MODE_CENTRAL
+    bool "BLE Central"
+
+config BLUETOOTH_MODE_CLASSBT
+    bool "Class BT"
+
+config BLUETOOTH_MODE_OFF
+    bool "OFF"
+
+endchoice
+
+config BLUETOOTH_MODE_TYPE
+    int
+    default 0 if BLUETOOTH_MODE_PERIPHERAL
+    default 1 if BLUETOOTH_MODE_CENTRAL
+    default 2 if BLUETOOTH_MODE_CLASSBT
+    default 3 if BLUETOOTH_MODE_OFF
+

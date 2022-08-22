@@ -89,6 +89,12 @@ source "network.Kconfig"
 
 endmenu
 
+menu "Bluetooth"
+
+source "bluetooth.Kconfig"
+
+endmenu
+
 menu "AppStack"
 
 source "appstack/appstack.Kconfig"

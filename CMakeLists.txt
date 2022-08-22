@@ -48,7 +48,22 @@ add_subdirectory(lib/SimpleMQTTGateWayStack/lib)
 target_link_libraries(${target} PUBLIC SMGS)
 
 #添加源代码
-file(GLOB  C_CPP_FILES *.c *.h *.cpp *.hpp appstack/*.c appstack/*.h  appstack/*.cpp appstack/*.hpp lib/MQTT/*.c lib/MQTT/*.h)
+file(GLOB  C_CPP_FILES
+*.c
+*.h
+*.cpp
+*.hpp
+appstack/*.c
+appstack/*.h
+appstack/*.cpp
+appstack/*.hpp
+bluetooth/*.cpp
+bluetooth/*.hpp
+bluetooth/*.c
+bluetooth/*.h
+lib/MQTT/*.c
+lib/MQTT/*.h
+)
 target_sources(${target} PUBLIC ${C_CPP_FILES})
 add_definitions(" -DMQTTCLIENT_PLATFORM_HEADER=MQTTAir724UG.h -DMQTT_TASK ")
 INCLUDE_DIRECTORIES(. appstack lib/MQTT/ )
