@@ -163,19 +163,51 @@ static void main_task(PVOID pParameter)
     }
 
     {
-        const char *app_json=(const char *)RCGetHandle("app.json");
-        if(app_json==NULL)
+        /*
+        加载文件系统或者资源文件中的app.json,保存一些常用信息
+        */
+        std::string app_json;
+        {
+            //加载RC中的资源文件
+            const char * temp=(const char *)RCGetHandle("app.json");
+            if(temp!=NULL)
+            {
+                app_json=temp;
+            }
+        }
+        if(app_json.empty())
+        {
+            //加载文件系统中的app.json(小于64KB)
+            size_t len=iot_fs_file_size((char *)"/app.json");
+            if(len!=0 && len <64*1024)
+            {
+                uint8_t * buff=new uint8_t[len+1];
+                memset(buff,0,len+1);
+                int fd=iot_fs_open_file((char *)"/app.json",FS_O_RDONLY);
+                if(fd>=0)
+                {
+                    iot_fs_read_file(fd,buff,len);
+                    iot_fs_close_file(fd);
+                    app_json=(const char *)buff;
+                }
+                delete [] buff;
+            }
+        }
+        if(app_json.empty())
         {
             app_json="{}";
         }
         Json::Reader reader;
         Json::Value json;
-        reader.parse(std::string(app_json),json);
-        json["imei"]=get_imei();
-        Json::StyledWriter writer;
-        std::string payload=writer.write(json);
-        app_debug_print("%s: json config\n%s",TAG,payload.c_str());
-
+        if(reader.parse(app_json,json))
+        {
+            {
+                json["imei"]=get_imei();
+            }
+            Json::StyledWriter writer;
+            std::string payload=writer.write(json);
+            app_debug_print("%s: json config\n%s",TAG,payload.c_str());
+        }
     }
 
     {
