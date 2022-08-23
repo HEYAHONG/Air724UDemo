@@ -6,19 +6,6 @@ extern "C"
 {
 #endif
 
-/*********************************************************************
-    INCLUDES
-*/
-
-/*********************************************************************
-    CONSTANTS
-*/
-
-/*
-    WARNING: The 16-bit UUIDs are assigned by the Bluetooth SIG and published
-            in the Bluetooth Assigned Numbers page. Do not change these values.
-            Changing them will cause Bluetooth interoperability issues.
-*/
 
 /**
     GATT Service UUIDs

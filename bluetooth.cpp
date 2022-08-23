@@ -147,7 +147,7 @@ bool bluetooth_set_scan_parameter(bluetooth_scan_parameter_t scan_para)
     U_OPENAT_BT_IOTCTL_PARAM para;
     int ret=0;
     {
-        //设置广播参数
+        //设置扫描参数
         memset(&para,0,sizeof(para));
         para.scanparam=new bluetooth_scan_parameter_t;
         memcpy(para.scanparam,&scan_para,sizeof(scan_para));
@@ -192,7 +192,7 @@ bool bluetooth_set_beacon(bluetooth_beacon_data_t data)
     U_OPENAT_BT_IOTCTL_PARAM para;
     int ret=0;
     {
-        //设置广播名称
+        //设置beacon
         memset(&para,0,sizeof(para));
         para.beacondata=new bluetooth_beacon_data_t;
         memcpy(para.beacondata,&data,sizeof(data));
