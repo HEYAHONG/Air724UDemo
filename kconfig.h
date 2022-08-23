@@ -7,5 +7,6 @@
 
 #endif // USE_KCONFIG
 
+#include "hal_config.h"
 
 #endif // KCONFIG_H_INCLUDED

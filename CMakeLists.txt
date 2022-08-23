@@ -66,7 +66,12 @@ lib/MQTT/*.h
 )
 target_sources(${target} PUBLIC ${C_CPP_FILES})
 add_definitions(" -DMQTTCLIENT_PLATFORM_HEADER=MQTTAir724UG.h -DMQTT_TASK ")
-INCLUDE_DIRECTORIES(. appstack lib/MQTT/ )
+INCLUDE_DIRECTORIES(
+.
+appstack
+lib/MQTT/
+bluetooth/
+)
 
 if(CONFIG_BUILD_APP_MBEDTLS)
 file(GLOB  SSL_C_CPP_FILES  lib/SSL/*.c lib/SSL/*.h)

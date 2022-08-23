@@ -151,8 +151,10 @@ static void main_task(PVOID pParameter)
         app_debug_print("%s:bluetooth %s\r\n",TAG,bluetooth_hasbluetooth()?"supported":"not supported");
         if(bluetooth_hasbluetooth())
         {
+#ifdef CONFIG_BT_SUPPORT
             //打开蓝牙
             bluetooth_switch_mode((BLUETOOTH_MODE)CONFIG_BLUETOOTH_MODE_TYPE);
+#endif // CONFIG_BT_SUPPORT
         }
     }
 
