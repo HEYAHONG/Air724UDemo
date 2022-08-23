@@ -62,7 +62,8 @@ bool bluetooth_switch_mode(BLUETOOTH_MODE workmode)
     {
         if(workmode!=BLUETOOTH_OFF)
         {
-            iot_bt_close();
+            if(mode!=BLUETOOTH_OFF)
+                iot_bt_close();
             if(iot_bt_open((E_OPENAT_BT_MODE)(int)workmode))
             {
                 app_debug_print("%s:bluetooth open success!\r\n",TAG);
@@ -242,11 +243,8 @@ static void bluetooth_task(PVOID pParameter)
 
 void bluetooth_init()
 {
-    /*
-        TODO:
-        似乎Air724UG不支持多次打开或者关闭蓝牙，需要使用其它方法检测
-    */
-    /*
+
+
     if(iot_bt_open(BLE_SLAVE))
     {
         iot_bt_close();
@@ -256,7 +254,7 @@ void bluetooth_init()
         //不支持蓝牙
         return;
     }
-    */
+
 
     if(bluetooth_task_handle!=NULL)
     {

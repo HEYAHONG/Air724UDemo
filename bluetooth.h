@@ -54,7 +54,7 @@ typedef enum
 BLUETOOTH_MODE bluetooth_get_currentmode();
 
 /** \brief 切换工作模式（打开或者关闭蓝牙）。
- *  似乎CSDK不支持多次打开或者关闭蓝牙，不能多次调用此函数
+ *
  *
  * \param workmode BLUETOOTH_MODE 工作模式
  * \return bool 是否成功
