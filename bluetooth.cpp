@@ -68,6 +68,28 @@ bool bluetooth_switch_mode(BLUETOOTH_MODE workmode)
             {
                 app_debug_print("%s:bluetooth open success!\r\n",TAG);
                 mode=workmode;
+                {
+                    //做一些初始化工作
+                    {
+                        //设置广播信息
+                        U_OPENAT_BT_IOTCTL_PARAM para;
+                        {
+                            //设置广播名称
+                            memset(&para,0,sizeof(para));
+                            std::string name=CONFIG_CSDK_PRO;
+                            para.data=(uint8_t *)name.c_str();
+                            iot_ble_iotctl(0,BLE_SET_NAME,para);
+                        }
+                        {
+                            //打开广播
+                            memset(&para,0,sizeof(para));
+                            para.advEnable=1;
+                            iot_ble_iotctl(0,BLE_SET_ADV_ENABLE,para);
+                        }
+
+                    }
+                }
+
             }
             else
             {
@@ -128,31 +150,11 @@ static void bluetooth_task(PVOID pParameter)
             if(msg!=NULL)
             {
                 {
+                    //app_debug_print("%s:bluetooth event %d\r\n",TAG,(int)msg->id);
                     //处理事件
                     switch(msg->id)
                     {
                     case OPENAT_BT_ME_ON_CNF:
-                    {
-                        //app_debug_print("%s:bluetooth on\r\n",TAG);
-                        {
-                            U_OPENAT_BT_IOTCTL_PARAM para;
-                            {
-                                //设置广播名称
-                                memset(&para,0,sizeof(para));
-                                std::string name=CONFIG_CSDK_PRO;
-                                para.data=(uint8_t *)name.c_str();
-                                iot_ble_iotctl(0,BLE_SET_NAME,para);
-                            }
-                            {
-                                //打开广播
-                                memset(&para,0,sizeof(para));
-                                para.advEnable=1;
-                                iot_ble_iotctl(0,BLE_SET_ADV_ENABLE,para);
-                            }
-
-                        }
-                    }
-                    break;
                     case OPENAT_BT_ME_OFF_CNF:
                     case OPENAT_BT_VISIBILE_CNF:
                     case OPENAT_BT_HIDDEN_CNF:
