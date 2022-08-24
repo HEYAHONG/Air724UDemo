@@ -423,9 +423,12 @@ static void bluetooth_task(PVOID pParameter)
                         if(cb!=NULL)
                         {
                             bluetooth_callback_msg_t msg_temp=(*msg);
-                            uint8_t data[msg->len];
-                            msg_temp.dataPtr=data;
-                            memcpy(data,msg->dataPtr,msg->len);
+                            uint8_t data[msg->len+1];
+                            if(msg->dataPtr!=NULL)
+                            {
+                                msg_temp.dataPtr=data;
+                                memcpy(data,msg->dataPtr,msg->len);
+                            }
 
                             cb(msg_temp);
                         }
