@@ -27,6 +27,7 @@ void app_debug_init()
     lock=iot_os_create_semaphore(1);
 }
 
+/*
 //输出调试信息
 void app_debug_print(const char * fmt,...)
 {
@@ -34,6 +35,7 @@ void app_debug_print(const char * fmt,...)
     va_start(args, fmt);
     vprintf(fmt,args);
 }
+*/
 
 int write_tty(char *ptr,int len)
 {

@@ -131,12 +131,12 @@ static void main_task(PVOID pParameter)
 
     {
         uint64_t current_tick=iot_os_get_system_tick();
-        app_debug_print("%s:current tick=%u\n\r",TAG,current_tick);
+        app_debug_print("%s:current tick=%llu\n\r",TAG,current_tick);
         iot_os_sleep(500);//延时500ms
         uint64_t current_tick_after_500ms=iot_os_get_system_tick();
-        app_debug_print("%s:current tick=%u after 500ms\n\r",TAG,current_tick_after_500ms);
+        app_debug_print("%s:current tick=%llu after 500ms\n\r",TAG,current_tick_after_500ms);
         ms_per_tick=(500/(current_tick_after_500ms-current_tick));
-        app_debug_print("%s:ms_per_tick=%u\n\r",TAG,ms_per_tick);
+        app_debug_print("%s:ms_per_tick=%llu\n\r",TAG,ms_per_tick);
         {
             //检查steady_clock
             using namespace std::literals;//启用如1ms 24h等用法
@@ -223,7 +223,7 @@ static void main_task(PVOID pParameter)
         iot_flash_getaddr(&addr,&length);
 
         //打印剩余flash
-        app_debug_print("%s:User Flash Addr:0x%08X,%uBytes\n\r",TAG,addr,length);
+        app_debug_print("%s:User Flash Addr:0x%08lX,%luBytes\n\r",TAG,addr,length);
 
 #if CONFIG_APP_AUTOMOUNT_FLASH == 1
         {
@@ -289,7 +289,7 @@ static void main_task(PVOID pParameter)
         freememory=(totalmemory-freememory);
 
         //打印剩余内存
-        app_debug_print("%s:Total Memory:%uBytes,Free Memory:%uBytes\n\r",TAG,totalmemory,freememory);
+        app_debug_print("%s:Total Memory:%luBytes,Free Memory:%luBytes\n\r",TAG,totalmemory,freememory);
     }
 
 

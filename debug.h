@@ -5,14 +5,16 @@
 extern "C"
 {
 #endif // __cplusplus
-
-
+#include "stdio.h"
 
 //初始化app_debug,默认使用UART2,921600
 void app_debug_init();
 
-//输出调试信息
-void app_debug_print(const char * fmt,...);
+#ifndef iot_debug_print
+void iot_debug_print(char *fmt, ...);
+#endif // iot_debug_print
+
+#define app_debug_print(fmt,...) {printf(fmt,##__VA_ARGS__);iot_debug_print((char *)("[applog] " fmt),##__VA_ARGS__);}
 
 #ifdef __cplusplus
 }

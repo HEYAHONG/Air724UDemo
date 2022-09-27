@@ -31,7 +31,7 @@ void app_init()
     {
         if(current_state!=NETWORK_STATE_CONNECTED)
         {
-            app_debug_print("%s:network is not connected,csq=%u!\r\n",TAG,(uint32_t)csq);
+            app_debug_print("%s:network is not connected,csq=%lu!\r\n",TAG,(uint32_t)csq);
             return;
         }
         else
@@ -44,7 +44,7 @@ void app_init()
                 localtime_r(&time,&tmstruct);
                 std::stringstream timestream;
                 timestream<<std::put_time(&tmstruct,"%F %T GMT");
-                app_debug_print("%s:network is  connected,csq=%u!(%s)\r\n",TAG,(uint32_t)csq,timestream.str().c_str());
+                app_debug_print("%s:network is  connected,csq=%lu!(%s)\r\n",TAG,(uint32_t)csq,timestream.str().c_str());
 
             }
         }
