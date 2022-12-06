@@ -47,6 +47,10 @@ SFFS是由CSDK支持的预先放置文件的方法。添加文件的目录为[sf
    git submodule update --init --recursive
   ```
 
+## 测试截图
+
+![Air724UDemo-1](doc/image/Air724UDemo-1.png)
+
 # 编译
 
 - 操作系统: Windows  10
