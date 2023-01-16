@@ -58,7 +58,7 @@ SFFS是由CSDK支持的预先放置文件的方法。添加文件的目录为[sf
 
 ## 脚本说明
 
-- build.bat:构建工程文件(condeblocks工程文件在build目录中)并编译。
+- build.bat:构建工程文件(codeblocks工程文件在build目录中)并编译。
 - buildenv.bat：构建工程文件并打开一个cmd.exe窗口（编译环境，此环境中可使用sdk中的工具）。
 - menuconfig.bat:配置Kconfig。
 
