@@ -44,7 +44,7 @@ endif()
 #添加库需要在add_appimg后
 
 #添加SMGS库
-add_subdirectory(lib/SimpleMQTTGateWayStack/lib)
+add_subdirectory(lib/SimpleMQTTGateWayStack/lib EXCLUDE_FROM_ALL)
 target_link_libraries(${target} PUBLIC SMGS)
 
 #添加源代码
@@ -90,15 +90,15 @@ target_include_directories(main_ril  PRIVATE ${CMAKE_SOURCE_DIR}/api/include)
 target_include_directories(main_ril  PRIVATE ${CMAKE_SOURCE_DIR}/components/ril/inc)
 
 #添加RC文件
-add_subdirectory(RC)
+add_subdirectory(RC EXCLUDE_FROM_ALL)
 target_link_libraries(${target} PRIVATE RC)
 
 #添加jsoncpp库
-add_subdirectory(lib/jsoncpp/)
+add_subdirectory(lib/jsoncpp/ EXCLUDE_FROM_ALL)
 target_link_libraries(${target} PRIVATE jsoncpp)
 
 #添加protobuf-c库
-add_subdirectory(lib/protobuf-c/)
+add_subdirectory(lib/protobuf-c/ EXCLUDE_FROM_ALL)
 target_link_libraries(${target} PRIVATE protobuf-c)
 
 #启用SFFS支持
