@@ -1,3 +1,5 @@
+#include "kconfig.h"
+#if CONFIG_MQTT_STACK_ONENET_DEVICE == 1
 #include "onenettoken.h"
 #include "mbedtls/md.h"
 #include "mbedtls/base64.h"
@@ -100,4 +102,5 @@ size_t OneNETHmac(OneNETTokenCryptoMethod method,uint8_t *out,size_t outlen,cons
 
 }
 
+#endif // CONFIG_MQTT_STACK_ONENET_DEVICE
 

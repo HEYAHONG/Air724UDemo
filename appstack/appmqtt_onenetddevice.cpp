@@ -15,7 +15,7 @@ static const char *TAG="MQTT_ONENET_DEVICE";
 */
 #define ONENET_PRODUCT_ID "coo6ifUmjQ"
 /*
-产品访问Key,本代码采用产品Key+加自动注册的方式
+产品访问Key,本代码采用产品Key+自动注册的方式
 */
 #define ONENET_PRODUCT_ACCESS_KEY "vt/QsIKvWn7znHdzFVdexOUMsS9wXsNdXbKHVaZiyrQ="
 /*
