@@ -40,12 +40,21 @@ void app_init()
             {
                 std::chrono::time_point<std::chrono::system_clock> tp=std::chrono::system_clock::now();
                 time_t time=std::chrono::system_clock::to_time_t(tp);
-                struct tm tmstruct={0};
+                struct tm tmstruct= {0};
                 localtime_r(&time,&tmstruct);
                 std::stringstream timestream;
                 timestream<<std::put_time(&tmstruct,"%F %T GMT");
                 app_debug_print("%s:network is  connected,csq=%lu!(%s)\r\n",TAG,(uint32_t)csq,timestream.str().c_str());
 
+            }
+        }
+
+        {
+            //实测当csq=0时，模块往往处于异常状态需要复位
+            if(csq==0)
+            {
+                app_debug_print("%s:network error,it will restart!\n",TAG);
+                iot_os_restart();
             }
         }
 
