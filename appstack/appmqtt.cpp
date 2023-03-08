@@ -189,6 +189,10 @@ static void mqtt_receive_task(void *arg)
 
             if(SUCCESS!=MQTTConnect(&mqttclient,&cfg))
             {
+                if(callback->disconnect!=NULL)
+                {
+                    callback->disconnect(*Cfg);
+                }
                 mqttserver.disconnect(&mqttserver);
                 app_debug_print("%s:mqtt connect failed!!\r\n",TAG);
                 continue;
@@ -294,6 +298,7 @@ static void mqtt_ping_task(void *arg)
 HANDLE mqtt_receive_task_handle=NULL;
 HANDLE mqtt_ping_task_handle=NULL;
 #include "appmqtt_smgs.h"
+#include "appmqtt_onenetddevice.h"
 void MQTT_Init()
 {
     if(mqtt_receive_task_handle!=NULL &&mqtt_ping_task_handle !=NULL)
@@ -316,7 +321,6 @@ void MQTT_Init()
         cb.disconnect=MQTT_SMGS_DisConnect;
         cb.onmessage=MQTT_SMGS_OnMessage;
         MQTT_Set_Callback(cb);
-#endif // CONFIG_MQTT_STACK_SMGS
         {
             Cfg->host=CONFIG_MQTT_HOST;
             Cfg->port=CONFIG_MQTT_PORT;
@@ -330,6 +334,29 @@ void MQTT_Init()
             }
 #endif // CONFIG_MQTT_SSL
         }
+#endif // CONFIG_MQTT_STACK_SMGS
+
+#if CONFIG_MQTT_STACK_ONENET_DEVICE == 1
+        cb.init=MQTT_OneNETDevice_Init;
+        cb.connect=MQTT_OneNETDevice_Connect;
+        cb.disconnect=MQTT_OneNETDevice_DisConnect;
+        cb.onmessage=MQTT_OneNETDevice_OnMessage;
+        MQTT_Set_Callback(cb);
+        {
+            Cfg->host=CONFIG_MQTT_ONENET_HOST;
+            Cfg->port=CONFIG_MQTT_ONENET_PORT;
+#if CONFIG_MQTT_SSL == 1
+            {
+                const char * rc=(char *)RCGetHandle(CONFIG_MQTT_ONENET_SSL_CERT_CA);
+                if(rc)
+                {
+                    Cfg->ssl.cacert=std::string(rc);
+                }
+            }
+#endif // CONFIG_MQTT_SSL
+        }
+#endif // CONFIG_MQTT_STACK_ONENET_DEVICE
+
         app_debug_print("%s:Init!\r\n",TAG);
     }
     uint8_t pri=app_get_auto_task_priority();

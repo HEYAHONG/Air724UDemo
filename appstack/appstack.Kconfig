@@ -13,7 +13,13 @@ choice MQTT_STACK
 config MQTT_STACK_SMGS
     bool "SMGS"
 
+config MQTT_STACK_ONENET_DEVICE
+    bool "OneNET Device"
+    select BUILD_APP_MBEDTLS
+
 endchoice
+
+if MQTT_STACK_SMGS
 
 config MQTT_HOST
     string "hostname"
@@ -23,13 +29,10 @@ config MQTT_PORT
     int "port"
     default 8883
 
-if MQTT_STACK_SMGS
 
 config MQTT_STACK_SMGS_KEEPALIVE
     int "keepalive"
     default 120
-
-endif
 
 config MQTT_SSL
     bool "SSL"
@@ -45,6 +48,41 @@ config MQTT_SSL_CERT_CA
     default "emqx/cacert.pem"
 
 endmenu
+
+endif
+endif
+
+if MQTT_STACK_ONENET_DEVICE
+
+config MQTT_ONENET_HOST
+    string "hostname"
+    default "studio-mqtts.heclouds.com"
+
+config MQTT_ONENET_PORT
+    int "port"
+    default 8883
+
+
+config MQTT_STACK_ONENET_DEVICE_KEEPALIVE
+    int "keepalive"
+    default 240
+
+config MQTT_SSL
+    bool "SSL"
+    default y
+    select BUILD_APP_MBEDTLS
+
+if MQTT_SSL
+
+menu "CERT"
+
+config MQTT_ONENET_SSL_CERT_CA
+    string "CA Cert RC Path"
+    default "OneNET/MQTTS-certificate.pem"
+
+endmenu
+
+endif
 endif
 
 endmenu

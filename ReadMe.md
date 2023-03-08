@@ -49,7 +49,21 @@ SFFS是由CSDK支持的预先放置文件的方法。添加文件的目录为[sf
 
 ## 测试截图
 
+### 默认
+
 ![Air724UDemo-1](doc/image/Air724UDemo-1.png)
+
+### 启用MQTT直连设备测试
+
+使用menuconfig.bat将MQTT切换至OneNETDevice。
+
+![OneNET_Device_Kconfig](doc/image/OneNETDevice/OneNET_Device_Kconfig.png)
+
+测试结果
+
+![OneNET_Device_UartDebug](doc/image/OneNETDevice/OneNET_Device_UartDebug.png)
+
+![OneNET_Device_OneNET](doc/image/OneNETDevice/OneNET_Device_OneNET.png)
 
 # 编译
 

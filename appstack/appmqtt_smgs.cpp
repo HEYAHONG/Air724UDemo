@@ -25,6 +25,9 @@ extern "C"
 #include "debug.h"
 #include "string.h"
 }
+
+#if CONFIG_MQTT_STACK_SMGS == 1
+
 static const char * TAG="MQTT_SMGS";
 
 extern SMGS_gateway_context_t gateway_context;
@@ -234,3 +237,5 @@ void MQTT_SMGS_DisConnect(MQTT_Cfg_t &cfg)
 {
 
 }
+
+#endif

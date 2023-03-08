@@ -17,5 +17,5 @@ cmake %CMAKEDEF% "%PROJECT_PATH%\csdk"  -G "CodeBlocks - Ninja" & ninja
 cd "%PROJECT_PATH%"
 
 @rem 打开CMD
-start /b cmd.exe
+cmd /c start /b cmd.exe
 
