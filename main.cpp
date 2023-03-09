@@ -1,4 +1,4 @@
-﻿
+
 extern "C"
 {
 #include "iot_debug.h"
@@ -80,6 +80,13 @@ const char * get_imei()
     }
 
     return NULL;
+}
+
+size_t get_free_memory()
+{
+    UINT32 totalmemory=0,freememory=0;
+    iot_os_mem_used(&totalmemory,&freememory);
+    return (totalmemory-freememory);
 }
 
 static void listdir(const char * dirname)

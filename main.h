@@ -11,6 +11,9 @@ extern uint64_t ms_per_tick;
 //获取imei
 const char * get_imei();
 
+size_t get_free_memory();
+
+
 #ifdef __cplusplus
 }
 #endif // __cplusplus
