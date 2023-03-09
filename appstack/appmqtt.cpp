@@ -263,6 +263,14 @@ static void mqtt_receive_task(void *arg)
 
 }
 
+
+bool MQTT_Is_Connected()
+{
+    return MQTTIsConnected(&mqttclient)!=0;
+}
+
+
+
 //执行ping
 static bool mqtt_ping(MQTTClient * client)
 {

@@ -89,6 +89,11 @@ void MQTT_Set_Callback(MQTT_Callback_t cb);
 */
 bool MQTT_Publish_Message(MQTT_Message_Ptr_t msg);
 
+/*
+MQTT是否连接
+*/
+bool MQTT_Is_Connected();
+
 #endif // __cplusplus
 
 #endif // APPMQTT_HPP_INCLUDED
