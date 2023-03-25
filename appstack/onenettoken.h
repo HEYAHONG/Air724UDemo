@@ -16,11 +16,21 @@ size_t OneNETBase64Encode(uint8_t *out,size_t outlen,const uint8_t *in,size_t in
 
 typedef enum
 {
+    ONENET_VERSION_2018_10_31=1,
+    ONENET_VERSION_DEFAULT= ONENET_VERSION_2018_10_31
+} OneNETTokenVersion;
+
+OneNETTokenVersion OneNETTokenVersionFromString(const char * version);
+
+typedef enum
+{
     ONENET_CRYPTO_MD5=1,
     ONENET_CRYPTO_SHA1,
     ONENET_CRYPTO_SHA256,
     ONENET_CRYPTO_DEFAULT=ONENET_CRYPTO_SHA256
 } OneNETTokenCryptoMethod;
+
+OneNETTokenCryptoMethod OneNETTokenCryptoMethodFromString(const char * method);
 
 #define ONENET_HMAC_OUT_MAX 64
 

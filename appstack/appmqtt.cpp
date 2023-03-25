@@ -1,4 +1,4 @@
-ï»¿
+
 #include "appmqtt.hpp"
 #include "appstack.hpp"
 #include "kconfig.h"
@@ -32,7 +32,7 @@ static const char * TAG="MQTT";
 
 
 /*
-MQTTç›¸å…³
+MQTTÏà¹Ø
 */
 struct Network mqttserver= {0};
 struct MQTTClient mqttclient= {0};
@@ -50,7 +50,7 @@ bool MQTT_Publish_Message(MQTT_Message_Ptr_t msg)
     auto client=&mqttclient;
     if(client==NULL || client->buf ==NULL || client->buf_size ==0 || client->ipstack==NULL || client->ipstack->mqttwrite==NULL)
     {
-        return false;//å‚æ•°æœ‰è¯¯
+        return false;//²ÎÊıÓĞÎó
     }
     if(MQTTIsConnected(&mqttclient)==0)
     {
@@ -162,16 +162,16 @@ static void mqtt_receive_task(void *arg)
 
             MQTTPacket_connectData cfg=MQTTPacket_connectData_initializer;
 
-            //ä½¿ç”¨keepaliveé€‰é¡¹
+            //Ê¹ÓÃkeepaliveÑ¡Ïî
             cfg.keepAliveInterval=Cfg->keepalive;;
 
-            //å¡«å†™clientID
+            //ÌîĞ´clientID
             cfg.clientID.cstring=(char *)Cfg->clientid.c_str();
 
-            //å¡«å†™cleansession
+            //ÌîĞ´cleansession
             cfg.cleansession=Cfg->cleansession;
 
-            //å¡«å†™ç”¨æˆ·åä¸å¯†ç 
+            //ÌîĞ´ÓÃ»§ÃûÓëÃÜÂë
             if(!Cfg->auth.username.empty())
                 cfg.username.cstring=(char *)Cfg->auth.username.c_str();
             if(!Cfg->auth.password.empty())
@@ -271,13 +271,13 @@ bool MQTT_Is_Connected()
 
 
 
-//æ‰§è¡Œping
+//Ö´ĞĞping
 static bool mqtt_ping(MQTTClient * client)
 {
 
     if(client==NULL || client->buf ==NULL || client->buf_size ==0 || client->ipstack==NULL || client->ipstack->mqttwrite==NULL)
     {
-        return false;//å‚æ•°æœ‰è¯¯
+        return false;//²ÎÊıÓĞÎó
     }
 
     uint8_t buff[8]= {0};
@@ -291,7 +291,7 @@ static void mqtt_ping_task(void *arg)
     uint64_t last_ping_tick=iot_os_get_system_tick();
     while(true)
     {
-        if(mqttclient.isconnected && iot_os_get_system_tick()-last_ping_tick> Cfg->keepalive*1000/2/ms_per_tick )//ping ä¸€æ¬¡
+        if(mqttclient.isconnected && iot_os_get_system_tick()-last_ping_tick> Cfg->keepalive*1000/2/ms_per_tick )//ping Ò»´Î
         {
             last_ping_tick=iot_os_get_system_tick();
             bool is_ok=mqtt_ping(&mqttclient);
@@ -315,7 +315,7 @@ void MQTT_Init()
     }
     else
     {
-        //å˜é‡åˆå§‹åŒ–
+        //±äÁ¿³õÊ¼»¯
         Cfg=std::make_shared<MQTT_Cfg_t>();
         callback=std::make_shared<MQTT_Callback_t>();
 
@@ -369,9 +369,9 @@ void MQTT_Init()
     }
     uint8_t pri=app_get_auto_task_priority();
     /*
-    å¦‚éœ€å¯ç”¨SSL,éœ€è¦è¾ƒå¤§ä»»åŠ¡æ ˆ
+    ÈçĞèÆôÓÃSSL,ĞèÒª½Ï´óÈÎÎñÕ»
     */
-    mqtt_receive_task_handle=iot_os_create_task(mqtt_receive_task, NULL, 8192, pri, OPENAT_OS_CREATE_DEFAULT,(char *) "MQTT Receive");
+    mqtt_receive_task_handle=iot_os_create_task(mqtt_receive_task, NULL, 163854, pri, OPENAT_OS_CREATE_DEFAULT,(char *) "MQTT Receive");
     mqtt_ping_task_handle=iot_os_create_task(mqtt_ping_task, NULL, 8192, pri, OPENAT_OS_CREATE_DEFAULT,(char *) "MQTT Ping");
 
 }

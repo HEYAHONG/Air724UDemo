@@ -3,6 +3,7 @@
 
 #if CONFIG_MQTT_STACK_ONENET_DEVICE == 1
 #include "onenettoken.h"
+#include "onenetonejson.h"
 #include <string>
 #include <chrono>
 #include "time.h"
@@ -11,19 +12,19 @@
 static const char *TAG="MQTT_ONENET_DEVICE";
 
 /*
-äº§å“ID
+²úÆ·ID
 */
 #define ONENET_PRODUCT_ID "coo6ifUmjQ"
 /*
-äº§å“è®¿é—®Key,æœ¬ä»£ç é‡‡ç”¨äº§å“Key+è‡ªåŠ¨æ³¨å†Œçš„æ–¹å¼
+²úÆ··ÃÎÊKey,±¾´úÂë²ÉÓÃ²úÆ·Key+×Ô¶¯×¢²áµÄ·½Ê½
 */
 #define ONENET_PRODUCT_ACCESS_KEY "vt/QsIKvWn7znHdzFVdexOUMsS9wXsNdXbKHVaZiyrQ="
 /*
-é‡‡ç”¨IMEIä½œä¸ºè®¾å¤‡åç§°
+²ÉÓÃIMEI×÷ÎªÉè±¸Ãû³Æ
 */
 #define ONENET_PRODUCT_DEVICENAME get_imei()
 /*
-OneNET Tokenç‰ˆæœ¬
+OneNET Token°æ±¾
 */
 #define ONENET_TOKEN_VERSION "2018-10-31"
 /*
@@ -134,6 +135,51 @@ static std::string  OneNETDeviceGetToken(time_t _et,std::string productid,std::s
 
 }
 
+static OneNETOneJson *onejson=NULL;
+
+/*
+´ËÎÄ¼şÖ»°üº¬³£ÓÃ¹¦ÄÜ£¬ÏêÏ¸½Ó¿ÚÇë²é¿´onenetonejson.hµÄ½Ó¿Ú
+*/
+
+static std::map<std::string,Json::Value>  *PropertyCache=NULL;
+
+/** \brief ÊôĞÔÖµÉèÖÃ
+ *
+ * \param key std::string ÊôĞÔÃû³Æ
+ * \param value Json::Value ÊôĞÔÖµ£¬¿ÉÒÔÎªÈÎÒâJsonÀàĞÍ
+ * \return bool ÊÇ·ñ³É¹¦
+ *
+ */
+static bool DeviceOnPropertySet(std::string key,Json::Value value)
+{
+    if(PropertyCache==NULL)
+    {
+        PropertyCache=new std::map<std::string,Json::Value>;
+    }
+    (*PropertyCache)[key]=value;
+    return true;
+}
+
+/** \brief ÊôĞÔÖµ»ñÈ¡
+ *
+ * \param key std::string ÊôĞÔÃû³Æ
+ * \param value Json::Value& ÊôĞÔÖµ£¬¿ÉÒÔÎªÈÎÒâJsonÀàĞÍ
+ * \return bool ÊÇ·ñ³É¹¦
+ *
+ */
+static bool DeviceOnPropertyGet(std::string key,Json::Value& value)
+{
+    if(PropertyCache==NULL)
+    {
+        PropertyCache=new std::map<std::string,Json::Value>;
+    }
+    if((*PropertyCache).find(key)!=(*PropertyCache).end())
+    {
+        value=(*PropertyCache)[key];
+        return true;
+    }
+    return false;
+}
 
 void MQTT_OneNETDevice_Init(MQTT_Cfg_t &cfg)
 {
@@ -158,7 +204,7 @@ void MQTT_OneNETDevice_Init(MQTT_Cfg_t &cfg)
         std::string productkey=ONENET_PRODUCT_ACCESS_KEY;
         std::string devicename=get_imei();
         auto now=std::chrono::system_clock::now();
-        now+=std::chrono::hours(1);//ä¸€å°æ—¶æœ‰æ•ˆæœŸ
+        now+=std::chrono::hours(1);//Ò»Ğ¡Ê±ÓĞĞ§ÆÚ
         time_t end_time_t=std::chrono::system_clock::to_time_t(now);
         std::string token=OneNETDeviceGetToken(end_time_t,productid,devicename,productkey);
         if(token.empty())
@@ -172,10 +218,31 @@ void MQTT_OneNETDevice_Init(MQTT_Cfg_t &cfg)
         cfg.auth.username=productid;
         cfg.auth.password=token;
         cfg.cleansession=true;
-        //è®¢é˜…æ‰€æœ‰è®¾å¤‡ä¸»é¢˜
+        //¶©ÔÄËùÓĞÉè±¸Ö÷Ìâ
         cfg.subscribe.subtopic=(std::string("$sys/")+productid+"/"+devicename+"/#");
         cfg.subscribe.qos=0;
 
+    }
+
+    if(onejson==NULL)
+    {
+        onejson=new OneNETOneJson();
+
+        //ÉèÖÃÉè±¸ĞÅÏ¢
+        onejson->SetDev(ONENET_PRODUCT_ID,ONENET_PRODUCT_DEVICENAME);
+        //ÉèÖÃMQTT·¢ËÍ
+        onejson->SetMQTTPublish([](std::string topic,std::string payload)
+        {
+            MQTT_Message_Ptr_t msg=std::make_shared<MQTT_Message_t>();
+            msg->topic=topic;
+            msg->payload=payload;
+            msg->qos=0;
+            msg->retain=0;
+            return MQTT_Publish_Message(msg);
+        });
+        //ÉèÖÃÉè±¸»Øµ÷
+        onejson->SetOnPropertyGet(DeviceOnPropertyGet);
+        onejson->SetOnPropertySet(DeviceOnPropertySet);
     }
 
 }
@@ -187,14 +254,28 @@ void MQTT_OneNETDevice_Connect(MQTT_Cfg_t &cfg)
 
 void MQTT_OneNETDevice_DisConnect(MQTT_Cfg_t &cfg)
 {
-    //æ¸…ç©ºclientidä»¥é‡æ–°åˆå§‹åŒ–(é‡æ–°è®¡ç®—Token)
+    //Çå¿ÕclientidÒÔÖØĞÂ³õÊ¼»¯(ÖØĞÂ¼ÆËãToken)
     cfg.clientid="";
 
 }
 
+
+
 void MQTT_OneNETDevice_OnMessage(MQTT_Cfg_t &cfg,MQTT_Message_Ptr_t msg)
 {
     app_debug_print("%s:OneNETMessage:topic=%s\nmessage=\n%s\n",TAG,msg->topic.c_str(),msg->payload.c_str());
+    if(onejson!=NULL)
+    {
+        try
+        {
+            onejson->OnMQTTMessage(msg->topic,msg->payload);
+        }
+        catch(...)
+        {
+
+        }
+    }
+
 }
 
 #endif

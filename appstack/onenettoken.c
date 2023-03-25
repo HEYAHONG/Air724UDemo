@@ -1,8 +1,10 @@
-#include "kconfig.h"
-#if CONFIG_MQTT_STACK_ONENET_DEVICE == 1
 #include "onenettoken.h"
 #include "mbedtls/md.h"
 #include "mbedtls/base64.h"
+#include "kconfig.h"
+
+#if CONFIG_MQTT_STACK_ONENET_DEVICE == 1
+
 
 size_t OneNETBase64Decode(uint8_t *out,size_t outlen,const uint8_t *in,size_t inlen)
 {
@@ -38,6 +40,39 @@ size_t OneNETBase64Encode(uint8_t *out,size_t outlen,const uint8_t *in,size_t in
     }
 }
 
+OneNETTokenVersion OneNETTokenVersionFromString(const char * version)
+{
+    OneNETTokenVersion ret=ONENET_VERSION_DEFAULT;
+    if(version!=NULL)
+    {
+        if(0==strcmp("2018-10-31",version))
+        {
+            ret=ONENET_VERSION_2018_10_31;
+        }
+    }
+    return ret;
+}
+
+OneNETTokenCryptoMethod OneNETTokenCryptoMethodFromString(const char * method)
+{
+    OneNETTokenCryptoMethod ret=ONENET_CRYPTO_DEFAULT;
+    if(method!=NULL)
+    {
+        if(0==strcmp("md5",method))
+        {
+            ret=ONENET_CRYPTO_MD5;
+        }
+        if(0==strcmp("sha1",method))
+        {
+            ret=ONENET_CRYPTO_SHA1;
+        }
+        if(0==strcmp("sha256",method))
+        {
+            ret=ONENET_CRYPTO_SHA256;
+        }
+    }
+    return ret;
+}
 
 size_t OneNETHmac(OneNETTokenCryptoMethod method,uint8_t *out,size_t outlen,const uint8_t *key,size_t keylen,const uint8_t *data,size_t datalen)
 {
@@ -103,4 +138,3 @@ size_t OneNETHmac(OneNETTokenCryptoMethod method,uint8_t *out,size_t outlen,cons
 }
 
 #endif // CONFIG_MQTT_STACK_ONENET_DEVICE
-
