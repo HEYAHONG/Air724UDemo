@@ -371,7 +371,7 @@ void MQTT_Init()
     /*
     如需启用SSL,需要较大任务栈
     */
-    mqtt_receive_task_handle=iot_os_create_task(mqtt_receive_task, NULL, 163854, pri, OPENAT_OS_CREATE_DEFAULT,(char *) "MQTT Receive");
+    mqtt_receive_task_handle=iot_os_create_task(mqtt_receive_task, NULL, 16384, pri, OPENAT_OS_CREATE_DEFAULT,(char *) "MQTT Receive");
     mqtt_ping_task_handle=iot_os_create_task(mqtt_ping_task, NULL, 8192, pri, OPENAT_OS_CREATE_DEFAULT,(char *) "MQTT Ping");
 
 }
