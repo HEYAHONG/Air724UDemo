@@ -1,4 +1,3 @@
-
 extern "C"
 {
 #include "iot_debug.h"
@@ -124,6 +123,22 @@ static void listdir(const char * dirname)
     }
 };
 
+static class cppinit
+{
+    static uint8_t count;
+public:
+    cppinit()
+    {
+        app_debug_print("%s:cpp init success(count = %d)!\n\r",TAG,(int)count);
+        count++;
+    }
+    ~cppinit()
+    {
+        count--;
+        app_debug_print("%s:cpp deinit success(count = %d)!\n\r",TAG,(int)count);
+    }
+} g_cppinit;
+uint8_t cppinit::count=0;
 
 static void main_task(PVOID pParameter)
 {
@@ -283,6 +298,23 @@ static void main_task(PVOID pParameter)
         }
 
     }
+
+    {
+        //初始化C++
+        app_debug_print("%s:init cpp environment!\n\r",TAG);
+        typedef void(*pfunc)();
+        extern pfunc __init_array_start[];
+        extern pfunc __init_array_end[];
+        pfunc *p=NULL;
+        for (p = __init_array_start; p < __init_array_end; p++)
+        {
+            if(p!=NULL)
+            {
+                (*p)();
+            }
+        }
+    }
+
 
 
     app_init();

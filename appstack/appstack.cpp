@@ -65,6 +65,7 @@ void app_init()
 
     network_add_callback(network_callback);
 
+
 }
 
 
