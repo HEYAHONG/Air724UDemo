@@ -101,7 +101,7 @@ target_link_libraries(${target} PRIVATE jsoncpp)
 add_subdirectory(lib/protobuf-c/ EXCLUDE_FROM_ALL)
 target_link_libraries(${target} PRIVATE protobuf-c)
 
-#添加protobuf-c库
+#添加printf库
 add_subdirectory(lib/printf/ EXCLUDE_FROM_ALL)
 target_link_libraries(${target} PRIVATE printf)
 
