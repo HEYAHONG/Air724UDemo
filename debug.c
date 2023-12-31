@@ -8,11 +8,12 @@
 #include "stdlib.h"
 #include "stdio.h"
 #include "string.h"
+#include "printf.h"
 
 static HANDLE lock=NULL;
 
-//初始化app_debug,默认使用UART2,921600
-void app_debug_init()
+//初始化debug_port,默认使用UART2,921600
+void debug_port_init()
 {
     T_AMOPENAT_UART_PARAM uartCfg;
     memset(&uartCfg, 0, sizeof(T_AMOPENAT_UART_PARAM));
@@ -27,15 +28,27 @@ void app_debug_init()
     lock=iot_os_create_semaphore(1);
 }
 
-/*
-//输出调试信息
-void app_debug_print(const char * fmt,...)
+
+void debug_port_lock()
 {
-    va_list args;
-    va_start(args, fmt);
-    vprintf(fmt,args);
+    if(lock == NULL)
+    {
+        debug_port_init();
+    }
+
+    iot_os_wait_semaphore(lock,0);
 }
-*/
+
+void debug_port_out(char character, void* arg)
+{
+    (void)arg;
+    iot_uart_write(OPENAT_UART_2,(UINT8 *)&character,1);
+}
+
+void debug_port_unlock()
+{
+    iot_os_release_semaphore(lock);
+}
 
 int write_tty(char *ptr,int len)
 {

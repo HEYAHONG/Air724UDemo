@@ -101,6 +101,10 @@ target_link_libraries(${target} PRIVATE jsoncpp)
 add_subdirectory(lib/protobuf-c/ EXCLUDE_FROM_ALL)
 target_link_libraries(${target} PRIVATE protobuf-c)
 
+#添加protobuf-c库
+add_subdirectory(lib/printf/ EXCLUDE_FROM_ALL)
+target_link_libraries(${target} PRIVATE printf)
+
 #启用SFFS支持
 if(CONFIG_BUILD_SFFS)
 find_program(SFFSCFGGEN NAMES sffscfggen sffscfggen.exe PATHS ./sffs/ REQUIRED)

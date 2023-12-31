@@ -6,15 +6,18 @@ extern "C"
 {
 #endif // __cplusplus
 #include "stdio.h"
-
-//初始化app_debug,默认使用UART2,921600
-void app_debug_init();
+#include "printf.h"
 
 #ifndef iot_debug_print
 void iot_debug_print(char *fmt, ...);
 #endif // iot_debug_print
 
-#define app_debug_print(fmt,...) {printf(fmt,##__VA_ARGS__);iot_debug_print((char *)("[applog] " fmt),##__VA_ARGS__);}
+#include "printf.h"
+void debug_port_lock();
+void debug_port_out(char character, void* arg);
+void debug_port_unlock();
+
+#define app_debug_print(fmt,...) {debug_port_lock();fctprintf(debug_port_out,NULL,fmt,##__VA_ARGS__);debug_port_unlock();iot_debug_print((char *)("[applog] " fmt),##__VA_ARGS__);}
 
 #ifdef __cplusplus
 }

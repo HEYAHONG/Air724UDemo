@@ -356,8 +356,6 @@ extern "C" int appimg_enter(void *param)
 
     iot_pmd_exit_deepsleep();
 
-    app_debug_init();
-
     network_init();
 
     bluetooth_init();
